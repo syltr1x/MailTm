@@ -1,7 +1,9 @@
 from colorama import init, Fore as c
+import random as r
 import requests
 import json
 init()
+address=["@coop1001facons.ca","@chatily.com"]
 
 def init_program():
     try:
@@ -11,7 +13,7 @@ def init_program():
             print(c.GREEN+"Cerrando..."+c.WHITE)
             exit()
         elif action == 1:
-            email = input("Address (not include domain)>> ")+"@bukhariansiddur.com"
+            email = input("Address (not include domain)>> ")+address[r.randint(0,len(address)-1)]
             password = input("Password >> ")
             add_account(email, password)
         elif action == 2:
@@ -41,7 +43,7 @@ def add_account(email, password):
     print("------------------------------")
     print(c.GREEN+"[+] Acount Created"+c.WHITE)
     with open("acc_info.json", "w") as accFile:
-        accFile.write('{\n    "email":"'+data["address"]+'",\n        "password":"'+password+'",\n        "id":"'+data["id"]+'",')
+        accFile.write('{\n    "email":"'+data["address"]+'",\n    "password":"'+password+'",\n    "id":"'+data["id"]+'",')
     get_token(email, password)
 
 def get_token(email, password):
@@ -55,7 +57,7 @@ def get_token(email, password):
     data = r.text
     data = json.loads(data)
     with open("acc_info.json", "a") as accFile:
-        accFile.write('\n        "token":"'+data["token"]+'"\n}')
+        accFile.write('\n    "token":"'+data["token"]+'"\n}')
     accFile.close()
 
 def delete_account():
