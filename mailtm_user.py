@@ -3,7 +3,10 @@ import random as r
 import requests
 import json
 init()
-address=["@coop1001facons.ca","@chatily.com"]
+
+with open("addresses.txt","r") as adrF:
+    address = adrF.read().split("\n")
+adrF.close()
 
 def init_program():
     try:
