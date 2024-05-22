@@ -2,6 +2,7 @@ from colorama import init, Fore as c
 import random as r
 import requests
 import json
+import os
 init()
 
 with open("addresses.txt","r") as adrF:
@@ -10,7 +11,7 @@ adrF.close()
 
 def init_program():
     try:
-        print("\n[0] Salir\n[1] Crear cuenta   [2] Mostrar cuenta\n[3] Mostrar Msj    [4] Eliminar cuenta")
+        print("\n[0] Salir\n[1] Crear cuenta   [2] Mostrar cuenta\n[3] Mostrar Msj    [4] Eliminar cuenta"+("\n[5] Mostrar Cuentas" if os.path.exists('acc_info.json') else ""))
         action = int(input("Action >> "))
         if action == 0:
             print(c.GREEN+"Cerrando..."+c.WHITE)
