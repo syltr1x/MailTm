@@ -5,9 +5,6 @@ import json
 import os
 init()
 
-with open("addresses.txt","r") as adrF:
-    address = adrF.read().split("\n")
-adrF.close()
 
 def init_program():
     try:
@@ -44,10 +41,23 @@ def add_account(email, password):
     r = requests.post(url, headers=headers, json=payload)
     data = r.text
     data = json.loads(data)
-    print("------------------------------")
+    # Detect Account file
+    if os.path.exists('acc_info.json'):
+        accFile = open('acc_info.json', 'r')
+        accData = accFile.read()
+        accData = accData[:-1][1:].replace('},', '}},').split('},') if len(accData) > 3 else []
+        accFile.close()
+    else: accData = []
+    # Write new account in file
+    accData.append('{'+f'"email":"{email}", "password":"{password}", "id":"{data["id"]}", "token":"{get_token(email, password)}"'+'}')
     print(c.GREEN+"[+] Account Created"+c.WHITE)
-    with open("acc_info.json", "w") as accFile:
-        accFile.write('{\n    "email":"'+data["address"]+'",\n    "password":"'+password+'",\n    "id":"'+data["id"]+'",\n    "token":"'+get_token(email, password)+'"\n}')
+    accFile = open('acc_info.json', 'w')
+    accFile.write('[')
+    for acc in accData:
+        accItem = json.loads(acc)
+        if accData.index(acc) < len(accData)-1: accFile.write('\n    {\n        "email":"'+accItem["email"]+'",\n        "password":"'+accItem["password"]+'",\n        "id":"'+accItem["id"]+'",\n        "token":"'+accItem["token"]+'"\n    },')
+        else: accFile.write('\n    {\n        "email":"'+accItem["email"]+'",\n        "password":"'+accItem["password"]+'",\n        "id":"'+accItem["id"]+'",\n        "token":"'+accItem["token"]+'"\n    }\n]')
+    accFile.close()
 
 def get_token(email, password):
     url = "https://api.mail.gw/token"
