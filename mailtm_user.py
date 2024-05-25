@@ -75,9 +75,18 @@ def delete_account():
     print(c.GREEN+"[+] Account Deleted"+c.WHITE)
 
 def show_account():
-    with open("acc_info.json", "r") as accFile:
-        data = json.loads(accFile.read())
-        print(c.GREEN+"\n Direccion / Address : "+c.WHITE+data["email"]+c.GREEN+"\n Contraseña / Password : "+c.WHITE+data["password"]+c.GREEN+"\n Id : "+c.WHITE+data["id"]+c.GREEN+"\n Token : "+c.WHITE+data["token"])
+    # File Verification
+    if not os.path.exists('acc_info.json'):
+        print(c.RED+"[!] "+c.WHITE+"No existen cuentas. Porfavor añade una primero.")
+        return 0
+    # Account Read and Display
+    accFile = open("acc_info.json", "r")
+    accData = accFile.read()
+    accData = accData[:-1][1:].replace('},','}},').split('},') if len(accData) > 3 else []
+    accFile.close()
+    for acc in accData:
+        acc = json.loads(acc)
+        print(c.GREEN+"\n Direccion / Address : "+c.WHITE+acc["email"]+c.GREEN+"\n Contraseña / Password : "+c.WHITE+acc["password"]+c.GREEN+"\n Id : "+c.WHITE+acc["id"]+c.GREEN+"\n Token : "+c.WHITE+acc["token"])
     accFile.close()
 
 def show_msg():
