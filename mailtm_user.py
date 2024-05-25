@@ -45,7 +45,7 @@ def add_account(email, password):
     data = r.text
     data = json.loads(data)
     print("------------------------------")
-    print(c.GREEN+"[+] Acount Created"+c.WHITE)
+    print(c.GREEN+"[+] Account Created"+c.WHITE)
     with open("acc_info.json", "w") as accFile:
         accFile.write('{\n    "email":"'+data["address"]+'",\n    "password":"'+password+'",\n    "id":"'+data["id"]+'",\n    "token":"'+get_token(email, password)+'"\n}')
 
