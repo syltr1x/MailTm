@@ -47,8 +47,7 @@ def add_account(email, password):
     print("------------------------------")
     print(c.GREEN+"[+] Acount Created"+c.WHITE)
     with open("acc_info.json", "w") as accFile:
-        accFile.write('{\n    "email":"'+data["address"]+'",\n    "password":"'+password+'",\n    "id":"'+data["id"]+'",')
-    get_token(email, password)
+        accFile.write('{\n    "email":"'+data["address"]+'",\n    "password":"'+password+'",\n    "id":"'+data["id"]+'",\n    "token":"'+get_token(email, password)+'"\n}')
 
 def get_token(email, password):
     url = "https://api.mail.gw/token"
@@ -60,9 +59,7 @@ def get_token(email, password):
     r = requests.post(url, headers=headers, json=payload)
     data = r.text
     data = json.loads(data)
-    with open("acc_info.json", "a") as accFile:
-        accFile.write('\n    "token":"'+data["token"]+'"\n}')
-    accFile.close()
+    return data["token"]
 
 def delete_account():
     with open("acc_info.json", "r") as accFile:
