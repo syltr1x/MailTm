@@ -5,6 +5,11 @@ import json
 import os
 init()
 
+def get_address():
+    adrsFile = open("addresses.txt", "r")
+    addresses = adrsFile.read().split("\n")
+    adrsFile.close()
+    return addresses[r.randint(0, len(addresses)-1)]
 
 def init_program():
     try:
@@ -14,7 +19,7 @@ def init_program():
             print(c.GREEN+"Cerrando..."+c.WHITE)
             exit()
         elif action == 1:
-            email = input("Address (not include domain)>> ")+address[r.randint(0,len(address)-1)]
+            email = input("Address (not include domain)>> ")
             password = input("Password >> ")
             add_account(email, password)
         elif action == 2:
@@ -32,6 +37,8 @@ def init_program():
         print(c.RED+"\n\nCtrl+C Detectado... Cerrando programa... Bye (~.v)\n")
 
 def add_account(email, password):
+    email = email+get_address()
+    # Create account in server
     url = "https://api.mail.gw/accounts"
     payload = {
         "address": email,
