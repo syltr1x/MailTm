@@ -13,7 +13,7 @@ def get_address():
 
 def init_program():
     try:
-        print("\n[0] Salir\n[1] Crear cuenta   [2] Mostrar cuenta\n[3] Mostrar Msj    [4] Eliminar cuenta")
+        print("\n[0] Salir\n[1] Crear cuenta   [2] Mostrar cuenta"+('s' if get_accounts('len') > 1 else '')+"\n[3] Mostrar Msj    [4] Eliminar cuenta")
         action = int(input("Action >> "))
         if action == 0:
             print(c.GREEN+"Cerrando..."+c.WHITE)
@@ -97,6 +97,7 @@ def get_accounts(req=""):
     accData = accFile.read()
     accData = accData[:-1][1:].replace('}', '}},').split('},') if len(accData) > 3 else []
     accFile.close()
+    accData = [acc for acc in accData if len(acc) > 5]
     # Request Check
     if req == "len": return len(accData)
     return accData
