@@ -13,7 +13,7 @@ def get_address():
 
 def init_program():
     try:
-        print("\n[0] Salir\n[1] Crear cuenta   [2] Mostrar cuenta\n[3] Mostrar Msj    [4] Eliminar cuenta"+("\n[5] Mostrar Cuentas" if os.path.exists('acc_info.json') else ""))
+        print("\n[0] Salir\n[1] Crear cuenta   [2] Mostrar cuenta\n[3] Mostrar Msj    [4] Eliminar cuenta")
         action = int(input("Action >> "))
         if action == 0:
             print(c.GREEN+"Cerrando..."+c.WHITE)
@@ -91,20 +91,26 @@ def delete_account():
     accFile.close()
     print(c.GREEN+"[+] Account Deleted"+c.WHITE)
 
+def get_accounts(req=""):
+    if not os.path.exists('acc_info.json'): return []
+    accFile = open('acc_info.json', 'r')
+    accData = accFile.read()
+    accData = accData[:-1][1:].replace('}', '}},').split('},') if len(accData) > 3 else []
+    accFile.close()
+    # Request Check
+    if req == "len": return len(accData)
+    return accData
+
 def show_account():
     # File Verification
     if not os.path.exists('acc_info.json'):
         print(c.RED+"[!] "+c.WHITE+"No existen cuentas. Porfavor añade una primero.")
         return 0
     # Account Read and Display
-    accFile = open("acc_info.json", "r")
-    accData = accFile.read()
-    accData = accData[:-1][1:].replace('},','}},').split('},') if len(accData) > 3 else []
-    accFile.close()
+    accData = get_accounts()
     for acc in accData:
         acc = json.loads(acc)
         print(c.GREEN+"\n Direccion / Address : "+c.WHITE+acc["email"]+c.GREEN+"\n Contraseña / Password : "+c.WHITE+acc["password"]+c.GREEN+"\n Id : "+c.WHITE+acc["id"]+c.GREEN+"\n Token : "+c.WHITE+acc["token"])
-    accFile.close()
 
 def show_msg():
     with open("acc_info.json", "r") as accFile:
