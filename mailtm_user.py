@@ -13,7 +13,7 @@ def get_address():
 
 def init_program():
     try:
-        print("\n[0] Salir\n[1] Agregar cuenta   [2] Mostrar cuenta"+('s' if get_accounts('len') > 1 else '')+"\n[3] Mostrar Msj    [4] Eliminar cuenta")
+        print("\n[0] Salir\n[1] Agregar cuenta      [2] Mostrar cuenta"+('s' if get_accounts('len') > 1 else '')+"\n[3] Mostrar mensajes    [4] Eliminar cuenta")
         action = int(input("Action >> "))
         if action == 0:
             print(c.GREEN+"Cerrando..."+c.WHITE)
