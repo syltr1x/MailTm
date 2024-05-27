@@ -25,8 +25,27 @@ def init_program():
                 email = input("Address (include domain)>> ")
                 password = input("Password >> ")
                 ret_code = add_account('login', email, password) 
-                if ret_code == "422": print(c.GREEN+"[+] "+c.WHITE+"Cuenta añadida con éxito")
+                if ret_code == 422: print(c.GREEN+"[+] "+c.WHITE+"Cuenta añadida con éxito")
                 else: print(c.YELLOW+"[*] "+c.WHITE+"La cuenta no existia, se ha creado y agregado con éxito")
+            elif option == 2:
+                email = input("Address (not include domain)>> ")
+                password = input("Password >> ")
+                ret_code, address = add_account('register', email, password)
+                if ret_code == 422: 
+                    print(c.RED+"[!] "+c.WHITE+"La cuenta que quieres crear ya existe.\nSi conoces las credenciales inicia sesión, o selecciona otro dominio")
+                    # Read Addresses
+                    adrsFile = open("addresses.txt", "r")
+                    addresses = adrsFile.read().split("\n")
+                    addresses.remove(address)
+                    adrsFile.close()
+                    # Display Addresses option
+                    print("[0] Atras")
+                    for addr in range(0, len(addresses), 2):
+                        opcion_1 = f"[{addr+1}] {addresses[addr]}"
+                        if addr+1 < len(addresses): opcion_2 = f"[{addr+2}] {addresses[addr+1]}"
+                        else: opcion_2 = ""
+                        print(f"{opcion_1:<30} {opcion_2}")
+                    selAcc = input("Domain >> ")
         elif action == 2:
             show_account()
         elif action == 3:
@@ -41,7 +60,9 @@ def init_program():
         print(c.RED+"\n\nCtrl+C Detectado... Cerrando programa... Bye (~.v)\n")
 
 def add_account(action, email, password):
-    if action != 'login': email = email+get_address()
+    if action != 'login': 
+        address = get_address()
+        email = email+address
     # Create account in server
     url = "https://api.mail.gw/accounts"
     payload = {
@@ -51,8 +72,8 @@ def add_account(action, email, password):
     headers = { 'Content-Type': 'application/json' }
     r = requests.post(url, headers=headers, json=payload)
     data = r.text
-    if r.status_code == "422" and action == 'register': return r.status_code
-    if r.status_code == "400": return r.status_code
+    if r.status_code == 422 and action == 'register': return r.status_code, address
+    if r.status_code == 400: return r.status_code
     data = json.loads(data)
     # Detect Account file
     if os.path.exists('acc_info.json'):
@@ -116,22 +137,24 @@ def show_account():
     # Account Read and Display
     accData = get_accounts()
     if len(accData) >= 2:
+        print("[0] Atras")
         for acc in range(0, len(accData), 2):
             opcion_1 = f"[{acc+1}] {json.loads(accData[acc])["email"]}"
             if acc+1 < len(accData): opcion_2 = f"[{acc+2}] {json.loads(accData[acc+1])["email"]}"
             else: opcion_2 = ""
             print(f"{opcion_1:<30} {opcion_2}")
-            selAcc = input("Account >> ")
-            try: 
-                selAcc = int(selAcc)-1
-                if selAcc > len(accData)-1:
-                    print(c.RED+f"[!] Valor incorrecto, el {selAcc+1} no se encuentra en la lista"+c.WHITE)
-                    return 0
-            except:
-                print(c.RED+"[!] Valor incorrecto, porfavor ingresa un número"+c.WHITE)
+        selAcc = input("Account >> ")
+        try: 
+            if int(selAcc) == 0: return 0
+            selAcc = int(selAcc)-1
+            if selAcc > len(accData)-1 or selAcc < 0:
+                print(c.RED+f"[!] Valor incorrecto, el {selAcc+1} no se encuentra en la lista"+c.WHITE)
                 return 0
-            account = json.loads(accData[selAcc])
-            print(c.GREEN+"\nDireccion / Address : "+c.WHITE+account["email"]+c.GREEN+"\nContraseña / Password : "+c.WHITE+account["password"]+c.GREEN+"\nId : "+c.WHITE+account["id"]+c.GREEN+"\nToken : "+c.WHITE+account["token"])
+        except:
+            print(c.RED+"[!] Valor incorrecto, porfavor ingresa un número"+c.WHITE)
+            return 0
+        account = json.loads(accData[selAcc])
+        print(c.GREEN+"\nDireccion / Address : "+c.WHITE+account["email"]+c.GREEN+"\nContraseña / Password : "+c.WHITE+account["password"]+c.GREEN+"\nId : "+c.WHITE+account["id"]+c.GREEN+"\nToken : "+c.WHITE+account["token"])
 
 def show_msg():
     with open("acc_info.json", "r") as accFile:
