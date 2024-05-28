@@ -23,7 +23,6 @@ def init_program():
             password = input("Password >> ")
             add_account(email, password)
         elif action == 2:
-            print(c.YELLOW+"[!] Remember : This account expires in 10 minutes"+c.WHITE)
             show_account()
         elif action == 3:
             print("Revisando mensajes...")
@@ -95,7 +94,7 @@ def get_accounts(req=""):
     if not os.path.exists('acc_info.json'): return []
     accFile = open('acc_info.json', 'r')
     accData = accFile.read()
-    accData = accData[:-1][1:].replace('}', '}},').split('},') if len(accData) > 3 else []
+    accData = accData[:-1][1:].replace('},', '}},').split('},') if len(accData) > 3 else []
     accFile.close()
     accData = [acc for acc in accData if len(acc) > 5]
     # Request Check
@@ -109,9 +108,23 @@ def show_account():
         return 0
     # Account Read and Display
     accData = get_accounts()
-    for acc in accData:
-        acc = json.loads(acc)
-        print(c.GREEN+"\n Direccion / Address : "+c.WHITE+acc["email"]+c.GREEN+"\n Contraseña / Password : "+c.WHITE+acc["password"]+c.GREEN+"\n Id : "+c.WHITE+acc["id"]+c.GREEN+"\n Token : "+c.WHITE+acc["token"])
+    if len(accData) >= 2:
+        for acc in range(0, len(accData), 2):
+            opcion_1 = f"[{acc+1}] {json.loads(accData[acc])["email"]}"
+            if acc+1 < len(accData): opcion_2 = f"[{acc+2}] {json.loads(accData[acc+1])["email"]}"
+            else: opcion_2 = ""
+            print(f"{opcion_1:<30} {opcion_2}")
+            selAcc = input("Account >> ")
+            try: 
+                selAcc = int(selAcc)-1
+                if selAcc > len(accData)-1:
+                    print(c.RED+f"[!] Valor incorrecto, el {selAcc+1} no se encuentra en la lista"+c.WHITE)
+                    return 0
+            except:
+                print(c.RED+"[!] Valor incorrecto, porfavor ingresa un número"+c.WHITE)
+                return 0
+            account = json.loads(accData[selAcc])
+            print(c.GREEN+"\nDireccion / Address : "+c.WHITE+account["email"]+c.GREEN+"\nContraseña / Password : "+c.WHITE+account["password"]+c.GREEN+"\nId : "+c.WHITE+account["id"]+c.GREEN+"\nToken : "+c.WHITE+account["token"])
 
 def show_msg():
     with open("acc_info.json", "r") as accFile:
