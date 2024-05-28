@@ -5,93 +5,22 @@ import json
 import os
 init()
 
-def get_address():
+def get_address(req='all'):
     adrsFile = open("addresses.txt", "r")
     addresses = adrsFile.read().split("\n")
     adrsFile.close()
-    return addresses[r.randint(0, len(addresses)-1)]
+    if req == 'all': return addresses
+    elif req == 'random': return addresses[r.randint(0, len(addresses)-1)]
 
-def init_program():
-    try:
-        print("\n[0] Salir\n[1] Agregar cuenta      [2] Mostrar cuenta"+('s' if get_accounts('len') > 1 else '')+"\n[3] Mostrar mensajes    [4] Eliminar cuenta")
-        action = int(input("Action >> "))
-        if action == 0:
-            print(c.GREEN+"Cerrando..."+c.WHITE)
-            exit()
-        elif action == 1:
-            print("[0] Atras\n[1] Iniciar sesión   [2] Crear cuenta")
-            option = int(input("Action >> "))
-            if option == 1:
-                email = input("Address (include domain)>> ")
-                password = input("Password >> ")
-                ret_code = add_account('login', email, password) 
-                if ret_code == 422: print(c.GREEN+"[+] "+c.WHITE+"Cuenta añadida con éxito")
-                else: print(c.YELLOW+"[*] "+c.WHITE+"La cuenta no existia, se ha creado y agregado con éxito")
-            elif option == 2:
-                email = input("Address (not include domain)>> ")
-                password = input("Password >> ")
-                ret_code, address = add_account('register', email, password)
-                if ret_code == 422: 
-                    print(c.RED+"[!] "+c.WHITE+"La cuenta que quieres crear ya existe.\nSi conoces las credenciales inicia sesión, o selecciona otro dominio")
-                    # Read Addresses
-                    adrsFile = open("addresses.txt", "r")
-                    addresses = adrsFile.read().split("\n")
-                    addresses.remove(address)
-                    adrsFile.close()
-                    # Display Addresses option
-                    print("[0] Atras")
-                    for addr in range(0, len(addresses), 2):
-                        opcion_1 = f"[{addr+1}] {addresses[addr]}"
-                        if addr+1 < len(addresses): opcion_2 = f"[{addr+2}] {addresses[addr+1]}"
-                        else: opcion_2 = ""
-                        print(f"{opcion_1:<30} {opcion_2}")
-                    selAcc = input("Domain >> ")
-        elif action == 2:
-            show_account()
-        elif action == 3:
-            print("Revisando mensajes...")
-            show_msg()
-        elif action == 4:
-            delete_account()
-        else:
-            print(c.RED+"[-] Err : Action not found..."+c.WHITE)
-        init_program()
-    except KeyboardInterrupt:
-        print(c.RED+"\n\nCtrl+C Detectado... Cerrando programa... Bye (~.v)\n")
-
-def add_account(action, email, password):
-    if action != 'login': 
-        address = get_address()
-        email = email+address
-    # Create account in server
-    url = "https://api.mail.gw/accounts"
+def get_id(token):
+    url = "https://api.mail.gw/me"
     payload = {
-        "address": email,
-        "password": password
+        "token": token
     }
-    headers = { 'Content-Type': 'application/json' }
-    r = requests.post(url, headers=headers, json=payload)
-    data = r.text
-    if r.status_code == 422 and action == 'register': return r.status_code, address
-    if r.status_code == 400: return r.status_code
-    data = json.loads(data)
-    # Detect Account file
-    if os.path.exists('acc_info.json'):
-        accFile = open('acc_info.json', 'r')
-        accData = accFile.read()
-        accData = accData[:-1][1:].replace('},', '}},').split('},') if len(accData) > 3 else []
-        accFile.close()
-    else: accData = []
-    # Write new account in file
-    accData.append('{'+f'"email":"{email}", "password":"{password}", "id":"{data["id"]}", "token":"{get_token(email, password)}"'+'}')
-    accFile = open('acc_info.json', 'w')
-    accFile.write('[')
-    for acc in accData:
-        accItem = json.loads(acc)
-        if accData.index(acc) < len(accData)-1: accFile.write('\n    {\n        "email":"'+accItem["email"]+'",\n        "password":"'+accItem["password"]+'",\n        "id":"'+accItem["id"]+'",\n        "token":"'+accItem["token"]+'"\n    },')
-        else: accFile.write('\n    {\n        "email":"'+accItem["email"]+'",\n        "password":"'+accItem["password"]+'",\n        "id":"'+accItem["id"]+'",\n        "token":"'+accItem["token"]+'"\n    }\n]')
-    accFile.close()
-    return r.status_code
+    header = {"authorization":f"Bearer {token}"}
+    r = requests.get(url, headers=header, json=payload)
+    data = json.loads(r.text)
+    return data["id"]
 
 def get_token(email, password):
     url = "https://api.mail.gw/token"
@@ -105,6 +34,73 @@ def get_token(email, password):
     data = json.loads(data)
     return data["token"]
 
+def get_accounts(req=""):
+    if not os.path.exists('acc_info.json'): return []
+    accFile = open('acc_info.json', 'r')
+    accData = accFile.read()
+    accData = accData[:-1][1:].replace('},', '}},').split('},') if len(accData) > 3 else []
+    accFile.close()
+    accData = [acc for acc in accData if len(acc) > 5]
+    # Request Check
+    if req == "len": return len(accData)
+    return accData
+
+def add_account():
+    print("[0] Atras\n[1] Iniciar sesión   [2] Crear cuenta")
+    option = int(input("Action >> "))
+    if option == 0: return 0
+    elif option == 1:
+        email = input("Address (include domain)>> ")
+        password = input("Password >> ")
+        ret_code = add_account(email, password) 
+        if ret_code == 422: print(c.GREEN+"[+] "+c.WHITE+"Cuenta añadida con éxito")
+        else: print(c.YELLOW+"[*] "+c.WHITE+"La cuenta no existia, se ha creado y agregado con éxito")
+    elif option == 2:
+        email = input("Address (not include domain)>> ")
+        address = get_address('random')
+        password = input("Password >> ")
+        ret_code = create_account(email+address, password)
+        if ret_code == 400: print(c.RED+"[-] Datos no validos. Porfavor revisa los campos.")
+        if ret_code == 201:
+            print(c.GREEN+"[+] "+c.WHITE+"La cuenta se ha creado correctamente. Almacenando los datos...")
+            write_account(email+address, password)
+            print(c.GREEN+"[+] "+c.WHITE+"La cuenta se ha almacenado correctamente. Puedes continuar :)")
+        if ret_code == 422:
+            print(c.YELLOW+"[!] "+c.WHITE+"La cuenta que quieres crear ya existe.\n[*] Intentando con otro dominio...")
+            res_code = create_account(email+get_address('random'), password)
+            if not res_code == 201: print(c.RED+"[!] "+c.WHITE+"No hemos podido crear tu cuenta. Porfavor intenta con otro nombre")
+    else: print(c.RED+"[-] Err: Entrada no valida. Porfavor reintentalo.")
+
+def create_account(email, password):
+    url = "https://api.mail.gw/accounts"
+    payload = {
+        "address": email,
+        "password": password
+    }
+    headers = { 'Content-Type': 'application/json' }
+    r = requests.post(url, headers=headers, json=payload)
+    return r.status_code
+
+def write_account(email, password):
+    token = get_token(email, password)
+    id = get_id(token)
+    # Detect Account file
+    if os.path.exists('acc_info.json'):
+        accFile = open('acc_info.json', 'r')
+        accData = accFile.read()
+        accData = accData[:-1][1:].replace('},', '}},').split('},') if len(accData) > 3 else []
+        accFile.close()
+    else: accData = []
+    # Write new account in file
+    accData.append('{'+f'"email":"{email}", "password":"{password}", "id":"{id}", "token":"{token}"'+'}')
+    accFile = open('acc_info.json', 'w')
+    accFile.write('[')
+    for acc in accData:
+        accItem = json.loads(acc)
+        if accData.index(acc) < len(accData)-1: accFile.write('\n    {\n        "email":"'+accItem["email"]+'",\n        "password":"'+accItem["password"]+'",\n        "id":"'+accItem["id"]+'",\n        "token":"'+accItem["token"]+'"\n    },')
+        else: accFile.write('\n    {\n        "email":"'+accItem["email"]+'",\n        "password":"'+accItem["password"]+'",\n        "id":"'+accItem["id"]+'",\n        "token":"'+accItem["token"]+'"\n    }\n]')
+    accFile.close()
+
 def delete_account():
     with open("acc_info.json", "r") as accFile:
         data = json.loads(accFile.read())
@@ -117,17 +113,6 @@ def delete_account():
         accFile.write(" [!] NO Account Exists !!!")
     accFile.close()
     print(c.GREEN+"[+] Account Deleted"+c.WHITE)
-
-def get_accounts(req=""):
-    if not os.path.exists('acc_info.json'): return []
-    accFile = open('acc_info.json', 'r')
-    accData = accFile.read()
-    accData = accData[:-1][1:].replace('},', '}},').split('},') if len(accData) > 3 else []
-    accFile.close()
-    accData = [acc for acc in accData if len(acc) > 5]
-    # Request Check
-    if req == "len": return len(accData)
-    return accData
 
 def show_account():
     # File Verification
@@ -182,4 +167,24 @@ def show_msg():
 
 
 print("Bienvenido a MailTm API... v.V")
-init_program()
+try:
+    while True:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("\n[0] Salir\n[1] Agregar cuenta      [2] Mostrar cuenta"+('s' if get_accounts('len') > 1 else '')+"\n[3] Mostrar mensajes    [4] Eliminar cuenta")
+        action = int(input("Action >> "))
+        if action == 0:
+            print(c.GREEN+"Cerrando..."+c.WHITE)
+            exit()
+        elif action == 1:
+            add_account()
+        elif action == 2:
+            show_account()
+        elif action == 3:
+            print("Revisando mensajes...")
+            show_msg()
+        elif action == 4:
+            delete_account()
+        else:
+            print(c.RED+"[-] Err : Action not found..."+c.WHITE)
+except KeyboardInterrupt:
+    print(c.RED+"\n\nCtrl+C Detectado... Cerrando programa... Bye (~.v)\n")
