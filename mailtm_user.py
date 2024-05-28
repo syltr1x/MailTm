@@ -146,7 +146,8 @@ def show_account():
             return 0
         account = json.loads(accData[selAcc])
         print(c.GREEN+"\nDireccion / Address : "+c.WHITE+account["email"]+c.GREEN+"\nContraseña / Password : "+c.WHITE+account["password"]+c.GREEN+"\nId : "+c.WHITE+account["id"]+c.GREEN+"\nToken : "+c.WHITE+account["token"])
-
+    input("\n[Enter] para limpiar...")
+    
 def show_msg():
     with open("acc_info.json", "r") as accFile:
         data = json.loads(accFile.read())
