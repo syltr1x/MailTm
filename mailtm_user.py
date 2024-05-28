@@ -20,7 +20,7 @@ def get_id(token):
     header = {"authorization":f"Bearer {token}"}
     r = requests.get(url, headers=header, json=payload)
     data = json.loads(r.text)
-    return data["id"]
+    return data["id"] if r.status_code == 200 else r.status_code
 
 def get_token(email, password):
     url = "https://api.mail.gw/token"
@@ -30,9 +30,8 @@ def get_token(email, password):
     }
     headers = { 'Content-Type': 'application/json' }
     r = requests.post(url, headers=headers, json=payload)
-    data = r.text
-    data = json.loads(data)
-    return data["token"]
+    data = json.loads(r.text)
+    return data["token"] if r.status_code == 200 else r.status_code
 
 def get_accounts(req=""):
     if not os.path.exists('acc_info.json'): return []
@@ -52,9 +51,16 @@ def add_account():
     elif option == 1:
         email = input("Address (include domain)>> ")
         password = input("Password >> ")
-        ret_code = add_account(email, password) 
-        if ret_code == 422: print(c.GREEN+"[+] "+c.WHITE+"Cuenta añadida con éxito")
-        else: print(c.YELLOW+"[*] "+c.WHITE+"La cuenta no existia, se ha creado y agregado con éxito")
+        token = get_token(email, password)
+        id = get_id(token)
+        if type(token) != int and type(id) != int:
+            write_account(email, password, token=token, id=id)
+        else: 
+            print(c.YELLOW+"[*] "+c.WHITE+"La cuenta no existia, se creara una...")
+            create_account(email, password)
+            print(c.GREEN+"[+] "+c.WHITE+"Cuenta creda con exito. Almacenando datos...")
+            write_account(email, password)
+            print(c.GREEN+"[+] "+c.WHITE+"Cuenta almacenada con exito. Puedes continuar :)")
     elif option == 2:
         email = input("Address (not include domain)>> ")
         address = get_address('random')
@@ -69,7 +75,7 @@ def add_account():
             print(c.YELLOW+"[!] "+c.WHITE+"La cuenta que quieres crear ya existe.\n[*] Intentando con otro dominio...")
             res_code = create_account(email+get_address('random'), password)
             if not res_code == 201: print(c.RED+"[!] "+c.WHITE+"No hemos podido crear tu cuenta. Porfavor intenta con otro nombre")
-    else: print(c.RED+"[-] Err: Entrada no valida. Porfavor reintentalo.")
+    else: print(c.RED+"[-] Err: Entrada no valida. Porfavor reintentalo."+c.WHITE)
 
 def create_account(email, password):
     url = "https://api.mail.gw/accounts"
@@ -81,9 +87,9 @@ def create_account(email, password):
     r = requests.post(url, headers=headers, json=payload)
     return r.status_code
 
-def write_account(email, password):
-    token = get_token(email, password)
-    id = get_id(token)
+def write_account(email, password, token=None, id=None):
+    if token == None: token = get_token(email, password)
+    if id == None: id = get_id(token)
     # Detect Account file
     if os.path.exists('acc_info.json'):
         accFile = open('acc_info.json', 'r')
