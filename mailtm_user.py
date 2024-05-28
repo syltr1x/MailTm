@@ -13,15 +13,20 @@ def get_address():
 
 def init_program():
     try:
-        print("\n[0] Salir\n[1] Crear cuenta   [2] Mostrar cuenta"+('s' if get_accounts('len') > 1 else '')+"\n[3] Mostrar Msj    [4] Eliminar cuenta")
+        print("\n[0] Salir\n[1] Agregar cuenta   [2] Mostrar cuenta"+('s' if get_accounts('len') > 1 else '')+"\n[3] Mostrar Msj    [4] Eliminar cuenta")
         action = int(input("Action >> "))
         if action == 0:
             print(c.GREEN+"Cerrando..."+c.WHITE)
             exit()
         elif action == 1:
-            email = input("Address (not include domain)>> ")
-            password = input("Password >> ")
-            add_account(email, password)
+            print("[0] Atras\n[1] Iniciar sesión   [2] Crear cuenta")
+            option = int(input("Action >> "))
+            if option == 1:
+                email = input("Address (include domain)>> ")
+                password = input("Password >> ")
+                ret_code = add_account('login', email, password) 
+                if ret_code == "422": print(c.GREEN+"[+] "+c.WHITE+"Cuenta añadida con éxito")
+                else: print(c.YELLOW+"[*] "+c.WHITE+"La cuenta no existia, se ha creado y agregado con éxito")
         elif action == 2:
             show_account()
         elif action == 3:
@@ -35,8 +40,8 @@ def init_program():
     except KeyboardInterrupt:
         print(c.RED+"\n\nCtrl+C Detectado... Cerrando programa... Bye (~.v)\n")
 
-def add_account(email, password):
-    email = email+get_address()
+def add_account(action, email, password):
+    if action != 'login': email = email+get_address()
     # Create account in server
     url = "https://api.mail.gw/accounts"
     payload = {
@@ -46,6 +51,8 @@ def add_account(email, password):
     headers = { 'Content-Type': 'application/json' }
     r = requests.post(url, headers=headers, json=payload)
     data = r.text
+    if r.status_code == "422" and action == 'register': return r.status_code
+    if r.status_code == "400": return r.status_code
     data = json.loads(data)
     # Detect Account file
     if os.path.exists('acc_info.json'):
@@ -56,7 +63,6 @@ def add_account(email, password):
     else: accData = []
     # Write new account in file
     accData.append('{'+f'"email":"{email}", "password":"{password}", "id":"{data["id"]}", "token":"{get_token(email, password)}"'+'}')
-    print(c.GREEN+"[+] Account Created"+c.WHITE)
     accFile = open('acc_info.json', 'w')
     accFile.write('[')
     for acc in accData:
@@ -64,6 +70,7 @@ def add_account(email, password):
         if accData.index(acc) < len(accData)-1: accFile.write('\n    {\n        "email":"'+accItem["email"]+'",\n        "password":"'+accItem["password"]+'",\n        "id":"'+accItem["id"]+'",\n        "token":"'+accItem["token"]+'"\n    },')
         else: accFile.write('\n    {\n        "email":"'+accItem["email"]+'",\n        "password":"'+accItem["password"]+'",\n        "id":"'+accItem["id"]+'",\n        "token":"'+accItem["token"]+'"\n    }\n]')
     accFile.close()
+    return r.status_code
 
 def get_token(email, password):
     url = "https://api.mail.gw/token"
