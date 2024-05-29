@@ -186,16 +186,19 @@ def show_msg():
         
         mailS = mail["from"]["address"]
         title = mail["subject"]
+        date = mail["createdAt"].split("+")[0].replace("-","/").replace("T","  ")
         content = mail["text"]
 
-        print("\n------------------------------")
-        print(c.GREEN+" Remitente / From : "+c.WHITE+mailS+c.GREEN+"\n Asunto / Subject : "+c.WHITE+title+c.GREEN+"\n Contenido / Content : "+c.WHITE+content)
+        print("\n----------------------------------------------")
+        print(c.GREEN+" Remitente : "+c.WHITE+mailS+c.GREEN+"\n Fecha : "+c.WHITE+date+c.GREEN+"\n Asunto : "+c.WHITE+title+c.GREEN+"\n Contenido : "+c.WHITE+content[:56]+"...")
     else:
         print(c.RED+"[!] NO TIENES NINGUN MENSAJE"+c.WHITE)
-    input("[Enter] para limpiar...")
+    print("\n[0] Atras\n[1] Mostrar todo el contenido   [2] Guardar mensaje")
+    option = input('Accion >> ')
+    if option == "0": return 0
+    if option == "1": print(c.GREEN+f"Contenido : \n{c.WHITE+content}")
+    input("\n[Enter] para limpiar...")
 
-
-print("Bienvenido a MailTm API... v.V")
 try:
     while True:
         os.system('cls' if os.name == 'nt' else 'clear')
