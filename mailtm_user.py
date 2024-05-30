@@ -152,10 +152,28 @@ def show_account():
     input("\n[Enter] para limpiar...")
     
 def show_msg():
-    with open("acc_info.json", "r") as accFile:
-        data = json.loads(accFile.read())
-        token = data["token"]
-    accFile.close()
+    accounts = get_accounts()
+    if len(accounts) >= 2:
+        for acc in range(0, len(accounts), 2):
+            opcion_1 = f"[{acc+1}] {json.loads(accounts[acc])["email"]}"
+            if acc+1 < len(accounts): opcion_2 = f"[{acc+2}] {json.loads(accounts[acc+1])["email"]}"
+            else: opcion_2 = ""
+            print(f"{opcion_1:<30} {opcion_2}")
+        selAcc = input("Account >> ")
+        try: 
+            if int(selAcc) == 0: return 0
+            selAcc = int(selAcc)-1
+            if selAcc > len(accounts)-1 or selAcc < 0:
+                print(c.RED+f"[!] Valor incorrecto, el {selAcc+1} no se encuentra en la lista"+c.WHITE)
+                return 0
+        except:
+            print(c.RED+"[!] Valor incorrecto, porfavor ingresa un número"+c.WHITE)
+            return 0
+        acc = json.loads(accounts[selAcc])
+    else:
+        acc = json.loads(accounts[0])
+
+    token = get_token(acc["email"], acc["password"])
     header = {"authorization":f"Bearer {token}"}
     r = requests.get("https://api.mail.gw/messages", headers=header)
     mail_sayisi = r.text
@@ -174,6 +192,7 @@ def show_msg():
         print(c.GREEN+" Remitente / From : "+c.WHITE+mailS+c.GREEN+"\n Asunto / Subject : "+c.WHITE+title+c.GREEN+"\n Contenido / Content : "+c.WHITE+content)
     else:
         print(c.RED+"[!] NO TIENES NINGUN MENSAJE"+c.WHITE)
+    input("[Enter] para limpiar...")
 
 
 print("Bienvenido a MailTm API... v.V")
@@ -190,7 +209,6 @@ try:
         elif action == 2:
             show_account()
         elif action == 3:
-            print("Revisando mensajes...")
             show_msg()
         elif action == 4:
             delete_account()
