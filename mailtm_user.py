@@ -4,6 +4,7 @@ import requests
 import json
 import os
 init()
+############## GET FUNCTIONS ###############
 
 def get_address(req='all'):
     adrsFile = open("addresses.txt", "r")
@@ -43,6 +44,16 @@ def get_accounts(req=""):
     # Request Check
     if req == "len": return len(accData)
     return accData
+
+def save_mail(sender, receiver, title, date, content):
+    date_simple = date.split(" ")[0].replace('/','-')
+    title = title[:16].replace(':','.')
+    file = open(f"{title}_{date_simple}.txt", 'w', encoding='utf8')
+    file.write(f'Fecha de emision: {date}')
+    file.write(f'\nEmisor: {sender}')
+    file.write(f'\nReceptor: {receiver}')
+    file.write(f'\nContenido:\n{content}')
+    file.close()
 
 def add_account():
     print("[0] Atras\n[1] Iniciar sesión   [2] Crear cuenta")
@@ -191,12 +202,17 @@ def show_msg():
 
         print("\n----------------------------------------------")
         print(c.GREEN+" Remitente : "+c.WHITE+mailS+c.GREEN+"\n Fecha : "+c.WHITE+date+c.GREEN+"\n Asunto : "+c.WHITE+title+c.GREEN+"\n Contenido : "+c.WHITE+content[:56]+"...")
+        print("\n[0] Atras\n[1] Mostrar todo el contenido   [2] Guardar mensaje")
+        option = input('Accion >> ')
+        if option == "0": return 0
+        if option == "1": print(c.GREEN+f"Contenido : \n{c.WHITE+content}")
+        if option == "2": 
+            save_mail(mailS, acc["email"], title, date, content)
+            print(c.GREEN+"[+] "+c.WHITE+f"Correo almacenado con exito en {title}.txt")
+        else: 
+            print(c.RED+f"[-] Err: No existe esa opcion"+c.WHITE)
     else:
         print(c.RED+"[!] NO TIENES NINGUN MENSAJE"+c.WHITE)
-    print("\n[0] Atras\n[1] Mostrar todo el contenido   [2] Guardar mensaje")
-    option = input('Accion >> ')
-    if option == "0": return 0
-    if option == "1": print(c.GREEN+f"Contenido : \n{c.WHITE+content}")
     input("\n[Enter] para limpiar...")
 
 try:
