@@ -203,19 +203,12 @@ try:
     while True:
         os.system('cls' if os.name == 'nt' else 'clear')
         print("\n[0] Salir\n[1] Agregar cuenta      [2] Mostrar cuenta"+('s' if get_accounts('len') > 1 else '')+"\n[3] Mostrar mensajes    [4] Eliminar cuenta")
-        action = int(input("Action >> "))
-        if action == 0:
-            print(c.GREEN+"Cerrando..."+c.WHITE)
-            exit()
-        elif action == 1:
-            add_account()
-        elif action == 2:
-            show_account()
-        elif action == 3:
-            show_msg()
-        elif action == 4:
-            delete_account()
-        else:
-            print(c.RED+"[-] Err : Action not found..."+c.WHITE)
+        action = input("Action >> ")
+        if action == "0": exit()
+        elif action == "1": add_account()
+        elif action == "2": show_account()
+        elif action == "3": show_msg()
+        elif action == "4": delete_account()
+        else: print(c.RED+"[-] Err : Accion no encontrada"+c.WHITE)
 except KeyboardInterrupt:
     print(c.RED+"\n\nCtrl+C Detectado... Cerrando programa... Bye (~.v)\n")
