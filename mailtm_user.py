@@ -2,6 +2,7 @@ from colorama import init, Fore as c
 import random as r
 import requests
 import json
+import time as tm
 import os
 init()
 ############## GET FUNCTIONS ###############
@@ -199,6 +200,11 @@ def show_msg():
         title = mail["subject"]
         date = mail["createdAt"].split("+")[0].replace("-","/").replace("T","  ")
         content = mail["text"]
+
+        times = date.split(" ")[2].split(':')
+        local_tmz_offset = -tm.timezone if tm.localtime().tm_isdst == 0 else -tm.altzone
+        hour = str(int(times[0])+local_tmz_offset/3600)[:-2]
+        date = f"{date.split(" ")[0]} {hour}:{times[1]}:{times[2]}"
 
         print("\n----------------------------------------------")
         print(c.GREEN+" Remitente : "+c.WHITE+mailS+c.GREEN+"\n Fecha : "+c.WHITE+date+c.GREEN+"\n Asunto : "+c.WHITE+title+c.GREEN+"\n Contenido : "+c.WHITE+content[:56]+"...")
