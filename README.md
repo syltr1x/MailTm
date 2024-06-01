@@ -1,4 +1,4 @@
-# Documentation for use "api_mail.py"
+### 📄 Documentation for use "api_mail.py"
 
 > ### **Add an Account:** `add_account(email, password)`
 Create an account in server using address and password passed. 
@@ -12,11 +12,14 @@ Need token for delete account from server, if this is'nt passed, the function re
 for call `get_token`
 
 > ### **show_msg** `show_msg(email, password)`
-Return a list of messages of account
+Return a list of messages of account. EX:
+
+    [{"from":"user1@gmail.com", "title":"IMPORTANT MEET",
+    "date", "DD/MM/YYYY hh:mm:ss", "content":"bla bla bla"}]
 
 #
 
-> ### **Get Domains avaibles:** `get_domains()`
+> ### **Get Domains avaibles:** `get_domains()` 🆕
 Return a list of domains admited for create an account
 
 > ### **Get Token of Existing account:** `get_token(emal, password)`
