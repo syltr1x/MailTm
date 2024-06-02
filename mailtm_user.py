@@ -55,6 +55,7 @@ def save_mail(sender, receiver, title, date, content):
     file.write(f'\nReceptor: {receiver}')
     file.write(f'\nContenido:\n{content}')
     file.close()
+    print(c.GREEN+"[+] "+c.WHITE+f"Correo almacenado con exito en {title}.txt")
 
 def add_account():
     print("[0] Atras\n[1] Iniciar sesión   [2] Crear cuenta")
@@ -99,18 +100,21 @@ def create_account(email, password):
     r = requests.post(url, headers=headers, json=payload)
     return r.status_code
 
-def write_account(email, password, token=None, id=None):
+def write_account(email, password, token=None, id=None, comp=None):
     if token == None: token = get_token(email, password)
     if id == None: id = get_id(token)
     # Detect Account file
     if os.path.exists('acc_info.json'):
-        accFile = open('acc_info.json', 'r')
-        accData = accFile.read()
-        accData = accData[:-1][1:].replace('},', '}},').split('},') if len(accData) > 3 else []
-        accFile.close()
+        accData = get_accounts()
     else: accData = []
     # Write new account in file
-    accData.append('{'+f'"email":"{email}", "password":"{password}", "id":"{id}", "token":"{token}"'+'}')
+    if comp == None: accData.append('{'+f'"email":"{email}", "password":"{password}", "id":"{id}", "token":"{token}"'+'}')
+    else:
+        for i in accData:
+            if json.loads(i)["email"] == comp["email"]: 
+                accData.remove(i)
+                break
+            else: print(f"{json.loads(i)["email"]} != {comp["email"]}")
     accFile = open('acc_info.json', 'w')
     accFile.write('[')
     for acc in accData:
@@ -120,18 +124,36 @@ def write_account(email, password, token=None, id=None):
     accFile.close()
 
 def delete_account():
-    with open("acc_info.json", "r") as accFile:
-        data = json.loads(accFile.read())
-        id = data["id"]
-        token = data["token"]
-    accFile.close()
-    header = {"authorization":f"Bearer {token}"}
-    r = requests.delete(f"https://api.mail.gw/accounts/{id}", headers=header)
-    with open("acc_info.json", "w") as accFile:
-        accFile.write(" [!] NO Account Exists !!!")
-    accFile.close()
-    print(c.GREEN+"[+] Account Deleted"+c.WHITE)
-
+    accounts = get_accounts()
+    if len(accounts) >= 2:
+        for acc in range(0, len(accounts), 2):
+            opcion_1 = f"[{acc+1}] {json.loads(accounts[acc])["email"]}"
+            if acc+1 < len(accounts): opcion_2 = f"[{acc+2}] {json.loads(accounts[acc+1])["email"]}"
+            else: opcion_2 = ""
+            print(f"{opcion_1:<30} {opcion_2}")
+        selAcc = input("Account >> ")
+        try: 
+            if int(selAcc) == 0: return 0
+            selAcc = int(selAcc)-1
+            if selAcc > len(accounts)-1 or selAcc < 0:
+                print(c.RED+f"[!] Valor incorrecto, el {selAcc+1} no se encuentra en la lista"+c.WHITE)
+                return 0
+        except:
+            print(c.RED+"[!] Valor incorrecto, porfavor ingresa un número"+c.WHITE)
+            return 0
+        acc = json.loads(accounts[selAcc])
+    else: acc = json.loads(accounts[0])
+    action = input(f"[?] Quieres borrar la cuenta: {acc["email"]} [Y/n] >> ")
+    if action.lower() != "n":
+        print(c.RED+"[!] "+c.WHITE+"Borrando cuenta...")
+        token = get_token(acc["email"], acc["password"])
+        header = {"authorization":f"Bearer {token}"}
+        r = requests.delete(f"https://api.mail.gw/accounts/{id}", headers=header)
+        if r.status_code == 204: print(c.GREEN+"[+] "+c.WHITE+"Cuenta eliminada exitosamente.")
+        elif r.status_code == 404: print(c.YELLOW+"[*] "+c.WHITE+"La cuenta no existe.")
+        write_account(None, None, comp={"email":acc["email"]})
+    else: print(c.YELLOW+"[*] "+c.WHITE+"Operacion cancelada.")
+    
 def show_account():
     # File Verification
     if not os.path.exists('acc_info.json'):
@@ -212,11 +234,8 @@ def show_msg():
         option = input('Accion >> ')
         if option == "0": return 0
         if option == "1": print(c.GREEN+f"Contenido : \n{c.WHITE+content}")
-        if option == "2": 
-            save_mail(mailS, acc["email"], title, date, content)
-            print(c.GREEN+"[+] "+c.WHITE+f"Correo almacenado con exito en {title}.txt")
-        else: 
-            print(c.RED+f"[-] Err: No existe esa opcion"+c.WHITE)
+        if option == "2": save_mail(mailS, acc["email"], title, date, content)
+        else: print(c.RED+f"[-] Err: No existe esa opcion"+c.WHITE)
     else:
         print(c.RED+"[!] NO TIENES NINGUN MENSAJE"+c.WHITE)
     input("\n[Enter] para limpiar...")
