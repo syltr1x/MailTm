@@ -58,7 +58,7 @@ def save_mail(sender, receiver, title, date, content):
     print(c.GREEN+"[+] "+c.WHITE+f"Correo almacenado con exito en {title}.txt")
 
 def add_account():
-    print("[0] Atras\n[1] Iniciar sesión   [2] Crear cuenta")
+    print(f"{c.LIGHTRED_EX}[0]{c.WHITE} Atras\n{c.YELLOW}[1]{c.WHITE} Iniciar sesión   {c.YELLOW}[2]{c.WHITE} Crear cuenta")
     option = int(input("Action >> "))
     if option == 0: return 0
     elif option == 1:
@@ -103,11 +103,7 @@ def create_account(email, password):
 def write_account(email, password, token=None, id=None, comp=None):
     if token == None: token = get_token(email, password)
     if id == None: id = get_id(token)
-    # Detect Account file
-    if os.path.exists('acc_info.json'):
-        accData = get_accounts()
-    else: accData = []
-    # Write new account in file
+    accData = get_accounts()
     if comp == None: accData.append('{'+f'"email":"{email}", "password":"{password}", "id":"{id}", "token":"{token}"'+'}')
     else:
         for i in accData:
@@ -125,10 +121,12 @@ def write_account(email, password, token=None, id=None, comp=None):
 
 def delete_account():
     accounts = get_accounts()
+    if len(accounts) == 0: print(c.RED+"[!] "+c.WHITE+"No existe ninguna cuenta."); return 0
     if len(accounts) >= 2:
+        print(c.LIGHTRED_EX+"[0] "+c.WHITE+"Atras")
         for acc in range(0, len(accounts), 2):
-            opcion_1 = f"[{acc+1}] {json.loads(accounts[acc])["email"]}"
-            if acc+1 < len(accounts): opcion_2 = f"[{acc+2}] {json.loads(accounts[acc+1])["email"]}"
+            opcion_1 = f"{c.YELLOW}[{acc+1}]{c.WHITE} {json.loads(accounts[acc])["email"]}"
+            if acc+1 < len(accounts): opcion_2 = f"{c.YELLOW}[{acc+2}]{c.WHITE} {json.loads(accounts[acc+1])["email"]}"
             else: opcion_2 = ""
             print(f"{opcion_1:<30} {opcion_2}")
         selAcc = input("Account >> ")
@@ -155,17 +153,13 @@ def delete_account():
     else: print(c.YELLOW+"[*] "+c.WHITE+"Operacion cancelada.")
     
 def show_account():
-    # File Verification
-    if not os.path.exists('acc_info.json'):
-        print(c.RED+"[!] "+c.WHITE+"No existen cuentas. Porfavor añade una primero.")
-        return 0
-    # Account Read and Display
     accData = get_accounts()
+    if len(accData) == 0: print(c.RED+"[!] "+c.WHITE+"No existe ninguna cuenta."); return 0
     if len(accData) >= 2:
-        print("[0] Atras")
+        print(c.LIGHTRED_EX+"[0] "+c.WHITE+"Atras")
         for acc in range(0, len(accData), 2):
-            opcion_1 = f"[{acc+1}] {json.loads(accData[acc])["email"]}"
-            if acc+1 < len(accData): opcion_2 = f"[{acc+2}] {json.loads(accData[acc+1])["email"]}"
+            opcion_1 = f"{c.YELLOW}[{acc+1}]{c.WHITE} {json.loads(accData[acc])["email"]}"
+            if acc+1 < len(accData): opcion_2 = f"{c.YELLOW}[{acc+2}]{c.WHITE} {json.loads(accData[acc+1])["email"]}"
             else: opcion_2 = ""
             print(f"{opcion_1:<30} {opcion_2}")
         selAcc = input("Account >> ")
@@ -187,10 +181,12 @@ def show_account():
     
 def show_msg():
     accounts = get_accounts()
+    if len(accounts) == 0: print(c.RED+"[!] "+c.WHITE+"No existe ninguna cuenta."); return 0
     if len(accounts) >= 2:
+        print(c.LIGHTRED_EX+"[0] "+c.WHITE+"Atras")
         for acc in range(0, len(accounts), 2):
-            opcion_1 = f"[{acc+1}] {json.loads(accounts[acc])["email"]}"
-            if acc+1 < len(accounts): opcion_2 = f"[{acc+2}] {json.loads(accounts[acc+1])["email"]}"
+            opcion_1 = f"{c.YELLOW}[{acc+1}]{c.WHITE} {json.loads(accounts[acc])["email"]}"
+            if acc+1 < len(accounts): opcion_2 = f"{c.YELLOW}[{acc+2}]{c.WHITE} {json.loads(accounts[acc+1])["email"]}"
             else: opcion_2 = ""
             print(f"{opcion_1:<30} {opcion_2}")
         selAcc = input("Account >> ")
@@ -230,7 +226,7 @@ def show_msg():
 
         print("\n----------------------------------------------")
         print(c.GREEN+" Remitente : "+c.WHITE+mailS+c.GREEN+"\n Fecha : "+c.WHITE+date+c.GREEN+"\n Asunto : "+c.WHITE+title+c.GREEN+"\n Contenido : "+c.WHITE+content[:56]+"...")
-        print("\n[0] Atras\n[1] Mostrar todo el contenido   [2] Guardar mensaje")
+        print(c.YELLOW+"\n[0] Atras\n"+c.YELLOW+"[1] "+c.WHITE+"Mostrar todo el contenido   "+c.YELLOW+"[2] "+c.WHITE+"Guardar mensaje")
         option = input('Accion >> ')
         if option == "0": return 0
         if option == "1": print(c.GREEN+f"Contenido : \n{c.WHITE+content}")
@@ -242,14 +238,15 @@ def show_msg():
 
 try:
     while True:
+        tm.sleep(0.28)
         os.system('cls' if os.name == 'nt' else 'clear')
-        print("\n[0] Salir\n[1] Agregar cuenta      [2] Mostrar cuenta"+('s' if get_accounts('len') > 1 else '')+"\n[3] Mostrar mensajes    [4] Eliminar cuenta")
+        print("\n"+c.LIGHTRED_EX+"[0] "+c.WHITE+"Salir\n"+c.YELLOW+"[1] "+c.WHITE+"Agregar cuenta      "+c.YELLOW+"[2] "+c.WHITE+"Mostrar cuenta"+('s' if get_accounts('len') > 1 else '')+"\n"+c.YELLOW+"[3] "+c.WHITE+"Mostrar mensajes    "+c.YELLOW+"[4] "+c.WHITE+"Eliminar cuenta")
         action = input("Action >> ")
         if action == "0": exit()
         elif action == "1": add_account()
         elif action == "2": show_account()
         elif action == "3": show_msg()
         elif action == "4": delete_account()
-        else: print(c.RED+"[-] Err : Accion no encontrada"+c.WHITE)
+        else: print(c.RED+"[-] "+c.WHITE+"Err : Accion no encontrada")
 except KeyboardInterrupt:
-    print(c.RED+"\n\nCtrl+C Detectado... Cerrando programa... Bye (~.v)\n")
+    print(c.RED+"\n\nCerrando programa...\n")
