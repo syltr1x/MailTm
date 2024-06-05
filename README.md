@@ -3,9 +3,9 @@
 > ### **Add an Account:** `add_account(email, password)`
 Create an account in server using address and password passed. 
 
-> ### **Save an Account:** `write_account(email, password, token=None, id=None)`
+> ### **Save an Account:** `write_account(email, password, token=None, id=None, file="acc_info")`
 Save account in a JSON file, store address, password, token and id. If two last aren't passed
-the function call `get_token` and `get_id`
+the function call `get_token` and `get_id`. If you try write inexistent account return error because can't obtain valid token and id
 
 > ### **Delete an Account:** `delete_account(email=None, password=None, token=None)`
 Need token for delete account from server, if this isn't passed, the function require email and password

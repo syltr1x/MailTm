@@ -38,6 +38,18 @@ def add_account(email, password):
     elif 422 == r.status_code: "[-] Err: Account already exist"
     else: return r.status_code
 
+def write_account(email, password, token=None, id=None, file="acc_info"):
+    if token == None: get_token(email, password)
+    if id == None: get_id(token)
+    accData = get_accounts(f"{file}.json")
+    accFile = open(f'{file}.json', 'w')
+    accFile.write('[')
+    for acc in accData:
+        accItem = json.loads(acc)
+        if accData.index(acc) < len(accData)-1: accFile.write('\n    {\n        "email":"'+accItem["email"]+'",\n        "password":"'+accItem["password"]+'",\n        "id":"'+accItem["id"]+'",\n        "token":"'+accItem["token"]+'"\n    },')
+        else: accFile.write('\n    {\n        "email":"'+accItem["email"]+'",\n        "password":"'+accItem["password"]+'",\n        "id":"'+accItem["id"]+'",\n        "token":"'+accItem["token"]+'"\n    }\n]')
+    accFile.close()
+
 def delete_account(id, token):
     header = {"authorization":f"Bearer {token}"}
     r = requests.delete(f"https://api.mail.gw/accounts/{id}", headers=header)
