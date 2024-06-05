@@ -1,9 +1,7 @@
-from colorama import init, Fore as c
 import time as tm
 import requests
 import json 
 import os
-init()
 
 def get_id(token):
     url = "https://api.mail.gw/me"
@@ -60,12 +58,14 @@ def write_account(email, password, token=None, id=None, file="acc_info"):
         else: accFile.write('\n    {\n        "email":"'+accItem["email"]+'",\n        "password":"'+accItem["password"]+'",\n        "id":"'+accItem["id"]+'",\n        "token":"'+accItem["token"]+'"\n    }\n]')
     accFile.close()
 
-def delete_account(id, token):
+def delete_account(email=None, password=None, token=None, id=None):
+    if token == None: token = get_token(email, password)
+    if id == None: id = get_id(token)
     header = {"authorization":f"Bearer {token}"}
     r = requests.delete(f"https://api.mail.gw/accounts/{id}", headers=header)
-    if r.status_code == 204 : print(c.GREEN+"[+] Account Deleted"+c.WHITE)
-    elif r.status_code == 404: print(c.RED+"[-] Err : Cuenta inexistente."+c.WHITE)
-    else: print(c.RED+"[-] Err : Unknow code Err : "+r+c.WHITE)
+    if r.status_code == 204 : return "[+] Account Deleted"
+    elif r.status_code == 404: return "[-] Err: Inexistent Account."
+    else: return r.status_code
 
 def show_msg(token):
     header = {"authorization":f"Bearer {token}"}
