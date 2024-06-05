@@ -1,6 +1,7 @@
 from colorama import init, Fore as c
+import time as tm
 import requests
-import json
+import json 
 init()
 
 def add_account(email, password):
@@ -40,15 +41,25 @@ def delete_account(id, token):
 def show_msg(token):
     header = {"authorization":f"Bearer {token}"}
     r = requests.get("https://api.mail.gw/messages", headers=header)
-    mail_sayisi = r.text
-    mail_sayisi = json.loads(mail_sayisi)
-    if str(mail_sayisi["hydra:member"]) != "[]":
-        id = mail_sayisi["hydra:member"][0]["id"]
-        r  = requests.get(f"https://api.mail.gw/messages/{id}", headers=header)
-        mail = json.loads(r.text)
+    mail_sayisi = json.loads(r.text)
+    if mail_sayisi["hydra:member"] != []:
+        out_mails = []
+        mails = mail_sayisi["hydra:member"]
+        for m in mails:
+            id = m["id"]
+            r  = requests.get(f"https://api.mail.gw/messages/{id}", headers=header)
+            mail = json.loads(r.text)
         
-        mailS = mail["from"]["address"]
-        title = mail["subject"]
-        content = mail["text"]
+            from_addr = mail["from"]["address"]
+            subject = mail["subject"]
+            date = mail["createdAt"].split("+")[0].replace("-", "/").replace("T","  ")
+            content = mail["text"]
 
-        return mail
+            ## Fix Time 
+            times = date.split(" ")[2].split(':')
+            local_tmz_offset = -tm.timezone if tm.localtime().tm_isdst == 0 else -tm.altzone
+            hour = str(int(times[0])+local_tmz_offset/3600)[:-2]
+            date = f"{date.split(" ")[0]} {hour}:{times[1]}:{times[2]}"
+
+            out_mails.append({"from":from_addr, "subject":subject, "date":date, "content": content})
+    return out_mails
