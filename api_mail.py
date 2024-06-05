@@ -41,9 +41,9 @@ def add_account(email, password):
     }
     headers = { 'Content-Type': 'application/json' }
     r = requests.post(url, headers=headers, json=payload)
-    if 201 == r.status_code: "[+] Account Created"
-    elif 400 == r.status_code: "[-] Err: Invalid values"
-    elif 422 == r.status_code: "[-] Err: Account already exist"
+    if 201 == r.status_code: return "[+] Account Created"
+    elif 400 == r.status_code: return "[-] Err: Invalid values"
+    elif 422 == r.status_code: return "[-] Err: Account already exist"
     else: return r.status_code
 
 def write_account(email, password, token=None, id=None, file="acc_info"):
