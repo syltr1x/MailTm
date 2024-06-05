@@ -28,8 +28,7 @@ def get_token(email, password):
     headers = { 'Content-Type': 'application/json' }
     r = requests.post(url, headers=headers, json=payload)
     data = json.loads(r.text)
-    if 200 in r.status_code: return data['token']
-    else: print(c.RED+"[-] Err : Unknow. Code Err : "+r+c.WHITE) 
+    return data["token"] if r.status_code == 200 else r.status_code
 
 def delete_account(id, token):
     header = {"authorization":f"Bearer {token}"}
