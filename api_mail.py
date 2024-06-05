@@ -2,6 +2,7 @@ from colorama import init, Fore as c
 import time as tm
 import requests
 import json 
+import os
 init()
 
 def get_id(token):
@@ -24,6 +25,15 @@ def get_token(email, password):
     r = requests.post(url, headers=headers, json=payload)
     data = json.loads(r.text)
     return data["token"] if r.status_code == 200 else r.status_code
+
+def get_accounts(file):
+    if not os.path.exists(f'{file}.json'): return []
+    accFile = open(f'{file}.json', 'r')
+    accData = accFile.read()
+    accData = accData[:-1][1:].replace('},', '}},').split('},') if len(accData) > 3 else []
+    accFile.close()
+    accData = [acc for acc in accData if len(acc) > 5]
+    return accData
 
 def add_account(email, password):
     url = "https://api.mail.gw/accounts"
