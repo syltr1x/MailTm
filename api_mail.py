@@ -4,20 +4,15 @@ import requests
 import json 
 init()
 
-def add_account(email, password):
-    url = "https://api.mail.gw/accounts"
+def get_id(token):
+    url = "https://api.mail.gw/me"
     payload = {
-        "address": email,
-        "password": password
+        "token": token
     }
-    headers = { 'Content-Type': 'application/json' }
-    r = requests.post(url, headers=headers, json=payload)
+    header = {"authorization":f"Bearer {token}"}
+    r = requests.get(url, headers=header, json=payload)
     data = json.loads(r.text)
-    if 201 == r.status_code: print(c.GREEN+"[+] Acount Created"+c.WHITE)
-    else: 
-        if 400 == r.status_code: print(c.RED+"[-] Err: Invalid values"+c.WHITE)
-        elif 422 == r.status_code: print(c.RED+"[-] Err: Account existent"+c.WHITE)
-        else: print(c.RED+"[-] Err: Unknow. Code Err : "+r+c.WHITE)
+    return data["id"] if r.status_code == 200 else r.status_code
 
 def get_token(email, password):
     url = "https://api.mail.gw/token"
@@ -29,6 +24,19 @@ def get_token(email, password):
     r = requests.post(url, headers=headers, json=payload)
     data = json.loads(r.text)
     return data["token"] if r.status_code == 200 else r.status_code
+
+def add_account(email, password):
+    url = "https://api.mail.gw/accounts"
+    payload = {
+        "address": email,
+        "password": password
+    }
+    headers = { 'Content-Type': 'application/json' }
+    r = requests.post(url, headers=headers, json=payload)
+    if 201 == r.status_code: "[+] Account Created"
+    elif 400 == r.status_code: "[-] Err: Invalid values"
+    elif 422 == r.status_code: "[-] Err: Account already exist"
+    else: return r.status_code
 
 def delete_account(id, token):
     header = {"authorization":f"Bearer {token}"}
