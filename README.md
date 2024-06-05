@@ -8,13 +8,13 @@ Save account in a JSON file, store address, password, token and id. If two last 
 the function call `get_token` and `get_id`
 
 > ### **Delete an Account:** `delete_account(email=None, password=None, token=None)`
-Need token for delete account from server, if this is'nt passed, the function require email and password
+Need token for delete account from server, if this isn't passed, the function require email and password
 for call `get_token`
 
 > ### **show_msg** `show_msg(email, password)`
 Return a list of messages of account. EX:
 
-    [{"from":"user1@gmail.com", "title":"IMPORTANT MEET",
+    [{"from":"user1@gmail.com", "subject":"IMPORTANT MEET",
     "date", "DD/MM/YYYY hh:mm:ss", "content":"bla bla bla"}]
 
 #
@@ -22,7 +22,7 @@ Return a list of messages of account. EX:
 > ### **Get Domains avaibles:** `get_domains()` 🆕
 Return a list of domains admited for create an account
 
-> ### **Get Token of Existing account:** `get_token(emal, password)`
+> ### **Get Token of Existing account:** `get_token(email, password)`
 Return token of account
 
 > ### **Get ID of Existing account:** `get_id(token)`
