@@ -7,6 +7,14 @@ import os
 init()
 ############## GET FUNCTIONS ###############
 
+def get_domains():
+    url = "https://api.mail.gw/domains"
+    r = requests.get(url)
+    if r.status_code == 200:
+        data = json.loads(r.text)["hydra:member"]
+        return [i["domain"] for i in data]
+    else: return []
+
 def get_address(req='all'):
     adrsFile = open("addresses.txt", "r")
     addresses = adrsFile.read().split("\n")
