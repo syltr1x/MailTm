@@ -12,8 +12,14 @@ def get_domains():
     r = requests.get(url)
     if r.status_code == 200:
         data = json.loads(r.text)["hydra:member"]
-        return [i["domain"] for i in data]
-    else: return []
+        addrFile = open('addresses.txt', 'w')
+        addresses = [i["domain"] for i in data]
+        for x in addresses:
+            if addresses.index(x) != len(addresses)-1: addrFile.write(f"@{x}\n")
+            else: addrFile.write(f"@{x}")
+        return c.GREEN+"[+] "+c.WHITE+"Se han almacenado los dominios correctamente..."
+    else: c.RED+"[-] "+c.WHITE*"No se han podido obtener los dominios"
+
 
 def get_address(req='all'):
     adrsFile = open("addresses.txt", "r")
@@ -248,13 +254,17 @@ try:
     while True:
         tm.sleep(0.28)
         os.system('cls' if os.name == 'nt' else 'clear')
-        print("\n"+c.LIGHTRED_EX+"[0] "+c.WHITE+"Salir\n"+c.YELLOW+"[1] "+c.WHITE+"Agregar cuenta      "+c.YELLOW+"[2] "+c.WHITE+"Mostrar cuenta"+('s' if get_accounts('len') > 1 else '')+"\n"+c.YELLOW+"[3] "+c.WHITE+"Mostrar mensajes    "+c.YELLOW+"[4] "+c.WHITE+"Eliminar cuenta")
+        print("\n"+c.LIGHTRED_EX+"[0] "+c.WHITE+"Salir\n"+c.YELLOW+"[1] "+c.WHITE+"Agregar cuenta      "+c.YELLOW+
+            "[2] "+c.WHITE+"Mostrar cuenta"+('s' if get_accounts('len') > 1 else '')+"\n"+c.YELLOW+
+            "[3] "+c.WHITE+"Mostrar mensajes    "+c.YELLOW+"[4] "+c.WHITE+"Eliminar cuenta\n"+c.YELLOW+
+            "[5] "+c.WHITE+"Obtener dominios")
         action = input("Action >> ")
         if action == "0": exit()
         elif action == "1": add_account()
         elif action == "2": show_account()
         elif action == "3": show_msg()
         elif action == "4": delete_account()
+        elif action == "5": print(get_domains())
         else: print(c.RED+"[-] "+c.WHITE+"Err : Accion no encontrada")
 except KeyboardInterrupt:
     print(c.RED+"\n\nCerrando programa...\n")
