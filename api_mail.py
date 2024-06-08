@@ -3,6 +3,14 @@ import requests
 import json 
 import os
 
+def get_domains():
+    url = "https://api.mail.gw/domains"
+    r = requests.get(url)
+    if r.status_code == 200:
+        data = json.loads(r.text)["hydra:member"]
+        return [i["domain"] for i in data]
+    else: return []
+
 def get_id(token):
     url = "https://api.mail.gw/me"
     payload = {
