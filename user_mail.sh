@@ -65,11 +65,16 @@ get_accounts() {
 		else
 			echo "${accounts[@]}"
 		fi
-
 	fi
 }
 write_account() {
 	echo "Guardando $1 $2"
+}
+
+create_account() {
+	header="Content-Type: application/json"
+	payload="{\"address\":\"$1\",\"password\":\"$2\"}"
+	curl -X POST -H "$header" -d "$payload" "https://api.mail.gw/accounts"
 }
 
 add_account() {
