@@ -23,7 +23,10 @@ get_domains() {
 
 get_address() {
 	if [ $1 -eq 'random' ]; then
-		echo $(cat "adresses.txt" | shuf -n 1)
+		echo $(cat "addresses.txt" | shuf -n 1)
+	elif [ $1 -eq 'all' ]; then
+		IFS='\n' read -d '' -r  -a addresses < <(cat "addresses.txt")
+		echo "${accounts[@]}"
 	fi
 }
 
@@ -56,11 +59,11 @@ get_accounts() {
 	if [ ! -f "acc_info.json" ]; then
 		echo "$accounts"
 	else
-		accounts=$(jq -r '.[].email' acc_info.json)
+		IFS='\n' read -d '' -r -a accounts < <(jq -c '.[]' acc_info.json)
 		if [ $1 -eq "len" ]; then
-			IFS='\n' read -rd '' -a email_array <<< "$accounts"
+			echo "${#accounts[@]}"
 		else
-			echo $accounts
+			echo "${accounts[@]}"
 		fi
 
 	fi
@@ -83,7 +86,7 @@ add_account() {
 			$(write_account "$email" "$password" "$token" "$id")
 		else
 			echo -e "[*] La cuenta no existe, se creara una..."
-			$(create_account"$email" "$password")
+			$(create_account "$email" "$password")
 			echo -e "${green}[+] ${end}Cuenta creada con exito. Almacenando datos..."
 			$(write_account "$email" "$password")
 			echo -e "${green}[+] ${end}Cuenta almacenada con exito. Puedes continuar :)"
