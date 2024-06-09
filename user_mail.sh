@@ -96,6 +96,7 @@ write_account() {
 		done
 		sed -i '$ s/,$//' acc_info.json
 		echo "]" >> acc_info.json
+	fi
 }
 
 create_account() {
@@ -105,13 +106,13 @@ create_account() {
 }
 
 add_account() {
-    echo -e "[0] Atras\n[1] Iniciar sesión  [2] Crear cuenta"
+    echo -e "${red}[0] ${end}Atras\n${yellow}[1] ${end}Iniciar sesión  ${yellow}[2] ${end}Crear cuenta"
 	echo -n ">>"; read option
 	if [ $option -eq "0" ]; then
 		return 0
 	elif [ $option -eq "1" ]; then
-		echo "Address (include domain) >> "; read email
-		echo "Password >> "; read password
+		echo -n "Address (include domain) >> "; read email
+		echo -n "Password >> "; read password
 		token=$(get_token "$email" "$password")
 		id=$(get_id "$token")
 		if [ $token -ne "empty" ] && [ $id -ne "empty" ]; then
@@ -123,6 +124,12 @@ add_account() {
 			$(write_account "$email" "$password")
 			echo -e "${green}[+] ${end}Cuenta almacenada con exito. Puedes continuar :)"
 		fi
+	elif [ $option -eq "2" ]; then
+		echo -n "Address (not include domain) >> "; read email
+		echo -n "Password >> "; read password
+		$(create_account "$email" "$password")
+	else
+		echo -e "${red}[-] Err: ${end}Entrada no valida. Porfavor reintentalo."
 	fi
 }
 
