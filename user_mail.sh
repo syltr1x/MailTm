@@ -68,7 +68,34 @@ get_accounts() {
 	fi
 }
 write_account() {
-	echo "Guardando $1 $2"
+	local email="$1"
+	local password="$2"
+	local token="${3:-empty}"
+	local id="${4:-empty}"
+	if [ $token -eq "empty" ]; then
+		token=$(get_token "$email" "$password")
+	fi
+	if [ $id -eq "empty" ]; then
+		id=$(get_id "$token")
+	fi
+
+	if [ ! -f "acc_info.json" ]; then
+		accounts=()
+	else
+		# Lee el fichero y almacena cada mapa dentro de un array
+		while IFS= read -r -d '' map; do
+			accounts+=( "$map" )
+		done < <(jq -c '.[]' acc_info.json)
+		# Crear y añadir mapa de la nueva cuenta al array
+		account="{\"email\":\"$email\",\"password\":\"$password\",\"id\":\"$id\",\"token\":\"$token\"}"
+		accounts+=("$account")
+		# Escribir los cambios en el fichero
+		echo "[" > acc_info.json
+		for acc in "${map_array[@]}"; do
+			echo "    $acc," >> acc_info.json
+		done
+		sed -i '$ s/,$//' acc_info.json
+		echo "]" >> acc_info.json
 }
 
 create_account() {
