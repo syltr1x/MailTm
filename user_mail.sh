@@ -16,9 +16,9 @@ get_domains() {
 	domains=()
 	response=$(curl -X GET "https://api.mail.gw/domains")
 	if [ $? -eq 0 ]; then
-		domains=$(echo "$domains" | jq -r '.hydra:member.domain')
+		domains=$(echo "$response" | jq -r '."hydra:member"[] | .domain')
 	fi
-	echo "{$domains[@]}"
+	echo "$domains"
 }
 
 get_address() {
