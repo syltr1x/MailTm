@@ -11,6 +11,16 @@ turquoise="\e[0;36m\033[1m"
 gray="\e[0;37m\033[1m"
 
 # Functions
+
+get_domains() {
+	domains=()
+	response=$(curl -X GET "https://api.mail.gw/domains")
+	if [ $? -eq 0 ]; then
+		domains=$(echo "$domains" | jq -r '.hydra:member.domain')
+	fi
+	echo "{$domains[@]}"
+}
+
 get_address() {
 	addresses=()
 	echo "$addresses"
