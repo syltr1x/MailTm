@@ -22,9 +22,9 @@ get_domains() {
 }
 
 get_address() {
-	if [ $1 -eq 'random' ]; then
+	if [ $1 == "random" ]; then
 		echo $(cat "addresses.txt" | shuf -n 1)
-	elif [ $1 -eq 'all' ]; then
+	elif [ $1 == "all" ]; then
 		IFS='\n' read -d '' -r  -a addresses < <(cat "addresses.txt")
 		echo "${accounts[@]}"
 	fi
@@ -72,10 +72,10 @@ write_account() {
 	local password="$2"
 	local token="${3:-empty}"
 	local id="${4:-empty}"
-	if [ $token -eq "empty" ]; then
+	if [ $token == "empty" ]; then
 		token=$(get_token "$email" "$password")
 	fi
-	if [ $id -eq "empty" ]; then
+	if [ $id == "empty" ]; then
 		id=$(get_id "$token")
 	fi
 
@@ -102,7 +102,7 @@ write_account() {
 create_account() {
 	header="Content-Type: application/json"
 	payload="{\"address\":\"$1\",\"password\":\"$2\"}"
-	curl -X POST -H "$header" -d "$payload" "https://api.mail.gw/accounts"
+	curl -X POST -H "$header" -d "$payload" -w "%{http_code}" "https://api.mail.gw/accounts"
 }
 
 add_account() {
@@ -127,7 +127,9 @@ add_account() {
 	elif [ $option -eq "2" ]; then
 		echo -n "Address (not include domain) >> "; read email
 		echo -n "Password >> "; read password
-		$(create_account "$email" "$password")
+		domain=$(get_address "random")
+		$(create_account "$email$domain" "$password")
+		$(write_account "$email" "$password")
 	else
 		echo -e "${red}[-] Err: ${end}Entrada no valida. Porfavor reintentalo."
 	fi

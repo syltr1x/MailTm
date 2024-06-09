@@ -1,0 +1,10 @@
+[H[2J[3J[0;31m[1m[0] [0m[0mSalir
+[0;33m[1m[1] [0m[0mAgregar Cuenta     [0;33m[1m[2] [0m[0mMostrar cuenta
+[0;33m[1m[3] [0m[0mMostrar mensajes   [0;33m[1m[4] [0m[0mEliminar cuenta
+>>[0;31m[1m[0] [0m[0mAtras
+[0;33m[1m[1] [0m[0mIniciar sesión  [0;33m[1m[2] [0m[0mCrear cuenta
+>>Address (not include domain) >> Password >> kopo@miteon.com
+[H[2J[3J[0;31m[1m[0] [0m[0mSalir
+[0;33m[1m[1] [0m[0mAgregar Cuenta     [0;33m[1m[2] [0m[0mMostrar cuenta
+[0;33m[1m[3] [0m[0mMostrar mensajes   [0;33m[1m[4] [0m[0mEliminar cuenta
+>>
