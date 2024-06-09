@@ -18,12 +18,13 @@ get_domains() {
 	if [ $? -eq 0 ]; then
 		domains=$(echo "$response" | jq -r '."hydra:member"[] | .domain')
 	fi
-	echo "$domains"
+	echo "$domains" > addresses.txt
 }
 
 get_address() {
-	addresses=()
-	echo "$addresses"
+	if [ $1 -eq 'random' ]; then
+		echo $(cat "adresses.txt" | shuf -n 1)
+	fi
 }
 
 get_token() {
@@ -55,7 +56,13 @@ get_accounts() {
 	if [ ! -f "acc_info.json" ]; then
 		echo "$accounts"
 	else
-		echo "ERROR"
+		accounts=$(jq -r '.[].email' acc_info.json)
+		if [ $1 -eq "len" ]; then
+			IFS='\n' read -rd '' -a email_array <<< "$accounts"
+		else
+			echo $accounts
+		fi
+
 	fi
 }
 write_account() {
@@ -85,7 +92,9 @@ add_account() {
 }
 
 show_accounts() {
-    echo "Mirando cuentas"
+	accounts=$(get_accounts)
+    echo accounts 
+	read asa 
 }
 
 show_msg() {
