@@ -14,7 +14,7 @@ gray="\e[0;37m\033[1m"
 
 get_domains() {
 	domains=()
-	response=$(curl -X GET "https://api.mail.gw/domains")
+	response=$(curl -sX GET "https://api.mail.gw/domains")
 	if [ $? -eq 0 ]; then
 		domains=$(echo "$response" | jq -r '."hydra:member"[] | .domain')
 	fi
@@ -22,11 +22,14 @@ get_domains() {
 }
 
 get_address() {
+  if [ ! -f 'addresses.txt' ]; then
+    get_domains 
+  fi
 	if [ $1 == "random" ]; then
 		echo $(cat "addresses.txt" | shuf -n 1)
 	elif [ $1 == "all" ]; then
-		IFS='\n' read -d '' -r  -a addresses < <(cat "addresses.txt")
-		echo "${accounts[@]}"
+		IFS='\n' read -d '' -r -a addresses < <(cat "addresses.txt")
+		echo "${addresses[@]}"
 	fi
 }
 
