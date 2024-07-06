@@ -34,9 +34,13 @@ get_address() {
 }
 
 get_token() {
+  if [ $# -lt 2 ]; then
+    echo "[!] Err: Missed parameter. Ex: get_token $email $address"
+    return 0
+  fi
 	header="Content-Type: application/json"
 	payload="{\"address\":\"$1\",\"password\":\"$2\"}"
-	response=$(curl -X GET -H "$header" -d "$payload" "https://api.mail.gw/token")
+	response=$(curl -sX POST -H "$header" -d "$payload" "https://api.mail.gw/token")
 	if [ $? -eq 0 ]; then
 		token=$(echo "$response" | jq -r '.token')
 	else
@@ -46,9 +50,12 @@ get_token() {
 }
 
 get_id() {
+  if [ $# -lt 1 ]; then
+    echo "[!] Err: Missed parameter. Ex: get_id $token"
+  fi
 	header="Authorization: Bearer $1"
-	payload="{\"token\":\"$id\"}"
-	response=$(curl -X GET -H "$header" -d "$payload" "https://api.mail.gw/me")
+	payload="{\"token\":\"$1\"}"
+	response=$(curl -sX GET -H "$header" -d "$payload" "https://api.mail.gw/me")
 	if [ $? -eq 0 ]; then
 		id=$(echo "$response" | jq -r '.id')
 	else
@@ -105,7 +112,7 @@ write_account() {
 create_account() {
 	header="Content-Type: application/json"
 	payload="{\"address\":\"$1\",\"password\":\"$2\"}"
-	curl -X POST -H "$header" -d "$payload" -w "%{http_code}" "https://api.mail.gw/accounts"
+	curl -sX POST -H "$header" -d "$payload" -w "%{http_code}" "https://api.mail.gw/accounts"
 }
 
 add_account() {
@@ -152,21 +159,26 @@ delete_account() {
     echo "Borrando"
 }
 
-while true; do
-    clear
-    echo -e "${red}[0] ${end}Salir\n${yellow}[1] ${end}Agregar Cuenta     ${yellow}[2] ${end}Mostrar cuenta\n${yellow}[3] ${end}Mostrar mensajes   ${yellow}[4] ${end}Eliminar cuenta"
-    echo -n ">>"; read action
-    if [ $action -eq "0" ]; then
-        exit 0
-    elif [ $action -eq "1" ]; then
-        add_account
-    elif [ $action -eq "2" ]; then
-        show_accounts
-    elif [ $action -eq "3" ]; then
-        show_msg
-    elif [ $action -eq "4" ]; then
-        delete_account
-    else
-        echo -e "[!] Err: Valor inesperado"
-    fi
-done
+user="panamiguel@maxamba.com"
+password="pass123"
+
+token=$(get_token $user $password)
+get_id $token
+# while true; do
+#     clear
+#     echo -e "${red}[0] ${end}Salir\n${yellow}[1] ${end}Agregar Cuenta     ${yellow}[2] ${end}Mostrar cuenta\n${yellow}[3] ${end}Mostrar mensajes   ${yellow}[4] ${end}Eliminar cuenta"
+#     echo -n ">>"; read action
+#     if [ $action -eq "0" ]; then
+#         exit 0
+#     elif [ $action -eq "1" ]; then
+#         add_account
+#     elif [ $action -eq "2" ]; then
+#         show_accounts
+#     elif [ $action -eq "3" ]; then
+#         show_msg
+#     elif [ $action -eq "4" ]; then
+#         delete_account
+#     else
+#         echo -e "[!] Err: Valor inesperado"
+#     fi
+# done
