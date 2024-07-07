@@ -64,18 +64,23 @@ get_id() {
 }
 
 get_accounts() {
+  if [ $# -lt 1 ]; then
+    $1="all"
+  fi
 	accounts=()
 	if [ ! -f "acc_info.json" ]; then
 		echo "$accounts"
 	else
-    accounts=$(jq -r '.[].email' acc_info.json | wc)
 		if [ $1 == "len" ]; then
-			echo "${#accounts[@]}"
+      accounts=$(jq -r '.[].email' acc_info.json | wc -l)
+			echo -e $accounts
 		else
-			echo "${accounts[@]}"
+      accounts=$(jq -r '.[]' acc_info.json)
+			echo -e "${accounts[@]}"
 		fi
 	fi
 }
+
 write_account() {
   if [ $# -lt 2 ]; then
     echo "[!] Err: Missed essential paramaters. Ex: write_account $email $password or write_account $email $password $token $id"
@@ -174,24 +179,37 @@ delete_account() {
     else
       echo "[*] Account isn't deleted"
     fi  
+  else
+    accs=$(get_accounts "all")
+    $accs | jq -r '.email' | awk '{printf "[%d] %s\t", NR, $0; if (NR % 2 == 0) print ""} END {if (NR % 2 == 1) print ""}'
+    echo -n "Select an account >> "; read acc
+    address=$(echo $accs | jq -r '.email' | sed -n "${acc}p")
+    data=$(echo $accs | grep '"email":"'"$address"'"' | jq -r '\(.token) \(.id)')
+    token=$(echo $data | awk '{ print $1 }')
+    id=$(echo $data | awk '{ print $2 }')
+    header="Authorization: Bearer $token"
+    curl -sX DELETE -H "$header" "https://api.mail.gw/accounts/$id"
+
+    sed -i '/"email":"'"$address"'"/d' acc_info.json
   fi
 }
 
 while true; do
     clear
-    echo -e "${red}[0] ${end}Salir\n${yellow}[1] ${end}Agregar Cuenta     ${yellow}[2] ${end}Mostrar cuenta\n${yellow}[3] ${end}Mostrar mensajes   ${yellow}[4] ${end}Eliminar cuenta"
+    echo -e "${red}[0] ${end}Exit\n${yellow}[1] ${end}Add Account     ${yellow}[2] ${end}Show Account\n${yellow}[3] ${end}Show messages   ${yellow}[4] ${end}Delete Account"
     echo -n ">>"; read action
-    if [ $action -eq "0" ]; then
+    if [ $action == "0" ]; then
         exit 0
-    elif [ $action -eq "1" ]; then
+    elif [ $action == "1" ]; then
         add_account
-    elif [ $action -eq "2" ]; then
+    elif [ $action == "2" ]; then
         show_accounts
-    elif [ $action -eq "3" ]; then
+    elif [ $action == "3" ]; then
         show_msg
-    elif [ $action -eq "4" ]; then
+    elif [ $action == "4" ]; then
         delete_account
     else
-        echo -e "[!] Err: Valor inesperado"
+        echo -e "${red}[!] ${end}Err: $action isn't a valid option."
     fi
+    sleep 0.5
 done
