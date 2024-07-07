@@ -69,8 +69,8 @@ get_accounts() {
 	if [ ! -f "acc_info.json" ]; then
 		echo "$accounts"
 	else
-		IFS='\n' read -d '' -r -a accounts < <(jq -c '.[]' acc_info.json)
-		if [ $1 -eq "len" ]; then
+    accounts=$(jq -r '.[].email' acc_info.json | wc)
+		if [ $1 == "len" ]; then
 			echo "${#accounts[@]}"
 		else
 			echo "${accounts[@]}"
@@ -78,6 +78,9 @@ get_accounts() {
 	fi
 }
 write_account() {
+  if [ $# -lt 2 ]; then
+    echo "[!] Err: Missed essential paramaters. Ex: write_account $email $password or write_account $email $password $token $id"
+  fi
 	local email="$1"
 	local password="$2"
 	local token="${3:-empty}"
@@ -96,17 +99,17 @@ write_account() {
 		while IFS= read -r -d '' map; do
 			accounts+=( "$map" )
 		done < <(jq -c '.[]' acc_info.json)
+  fi
 		# Crear y añadir mapa de la nueva cuenta al array
 		account="{\"email\":\"$email\",\"password\":\"$password\",\"id\":\"$id\",\"token\":\"$token\"}"
 		accounts+=("$account")
 		# Escribir los cambios en el fichero
 		echo "[" > acc_info.json
-		for acc in "${map_array[@]}"; do
+		for acc in "${accounts[@]}"; do
 			echo "    $acc," >> acc_info.json
 		done
 		sed -i '$ s/,$//' acc_info.json
 		echo "]" >> acc_info.json
-	fi
 }
 
 create_account() {
@@ -156,29 +159,40 @@ show_msg() {
 }
 
 delete_account() {
-    echo "Borrando"
+  accs=$(get_accounts "len")
+  if [ $accs -lt 2 ]; then
+    address=$(jq -r '.[].email' acc_info.json)
+    echo -ne "[?] Are you sure to delete account: $address [Y/n] >> "; read confirm
+    if [[ ! $confirm =~ ^[Nn]$ ]]; then
+      password=$(jq -r '.[] | "\(.email) \(.password)"' acc_info.json | awk '{ print $2 }')
+      token=$(get_token $address $password) 
+      id=$(get_id $token)
+	    header="Authorization: Bearer $token"
+      curl -sX DELETE -H "$header" "https://api.mail.gw/accounts/$id"
+
+      # Delete email line in "acc_info.json"
+      sed -i '/"email":"'"$address"'"/d' acc_info.json
+    else
+      echo "[*] Account isn't deleted"
+    fi  
+  fi
 }
 
-user="panamiguel@maxamba.com"
-password="pass123"
-
-token=$(get_token $user $password)
-get_id $token
-# while true; do
-#     clear
-#     echo -e "${red}[0] ${end}Salir\n${yellow}[1] ${end}Agregar Cuenta     ${yellow}[2] ${end}Mostrar cuenta\n${yellow}[3] ${end}Mostrar mensajes   ${yellow}[4] ${end}Eliminar cuenta"
-#     echo -n ">>"; read action
-#     if [ $action -eq "0" ]; then
-#         exit 0
-#     elif [ $action -eq "1" ]; then
-#         add_account
-#     elif [ $action -eq "2" ]; then
-#         show_accounts
-#     elif [ $action -eq "3" ]; then
-#         show_msg
-#     elif [ $action -eq "4" ]; then
-#         delete_account
-#     else
-#         echo -e "[!] Err: Valor inesperado"
-#     fi
-# done
+while true; do
+    clear
+    echo -e "${red}[0] ${end}Salir\n${yellow}[1] ${end}Agregar Cuenta     ${yellow}[2] ${end}Mostrar cuenta\n${yellow}[3] ${end}Mostrar mensajes   ${yellow}[4] ${end}Eliminar cuenta"
+    echo -n ">>"; read action
+    if [ $action -eq "0" ]; then
+        exit 0
+    elif [ $action -eq "1" ]; then
+        add_account
+    elif [ $action -eq "2" ]; then
+        show_accounts
+    elif [ $action -eq "3" ]; then
+        show_msg
+    elif [ $action -eq "4" ]; then
+        delete_account
+    else
+        echo -e "[!] Err: Valor inesperado"
+    fi
+done
