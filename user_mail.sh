@@ -26,10 +26,9 @@ get_address() {
     get_domains 
   fi
 	if [ $1 == "random" ]; then
-		echo $(cat "addresses.txt" | shuf -n 1)
+		echo $(cat addresses.txt | shuf -n 1)
 	elif [ $1 == "all" ]; then
-		IFS='\n' read -d '' -r -a addresses < <(cat "addresses.txt")
-		echo "${addresses[@]}"
+    awk 'NR > 0' addresses.txt
 	fi
 }
 
