@@ -16,7 +16,7 @@ get_domains() {
 	domains=()
 	response=$(curl -sX GET "https://api.mail.gw/domains")
 	if [ $? -eq 0 ]; then
-		domains=$(echo "$response" | jq -r '."hydra:member"[] | .domain')
+		domains=$(echo "$response" | jq -r '."hydra:member"[] | .domain' | awk '{print "@" $0}')
 	fi
 	echo "$domains" > addresses.txt
 }
