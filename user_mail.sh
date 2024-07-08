@@ -65,7 +65,7 @@ get_id() {
 
 get_accounts() {
   if [ $# -lt 1 ]; then
-    $1="all"
+    set -- "all"
   fi
 	accounts=()
 	if [ ! -f "acc_info.json" ]; then
@@ -75,8 +75,8 @@ get_accounts() {
       accounts=$(jq -r '.[].email' acc_info.json | wc -l)
 			echo -e $accounts
 		else
-      accounts=$(jq -r '.[]' acc_info.json)
-			echo -e "${accounts[@]}"
+      accounts=$(jq -c '.[]' acc_info.json)
+      echo $accounts
 		fi
 	fi
 }
@@ -153,9 +153,21 @@ add_account() {
 }
 
 show_accounts() {
-	accounts=$(get_accounts)
-    echo accounts 
-	read asa 
+	accounts=$(get_accounts "len")
+  accs=$(get_accounts "all")
+  if [ $accounts -lt 2 ]; then
+    address=$(jq -r '.[].email' acc_info.json)
+  else
+    echo $accs | jq -r '.email' | awk '{printf "[%d] %s\t", NR, $0; if (NR % 2 == 0) print ""} END {if (NR % 2 == 1) print ""}'
+    echo -n "Select an account >> "; read acc
+    address=$(echo $accs | awk '{ print $'"$acc"' }' | jq -r '.email')
+  fi
+  data=$(echo $accs | awk '{ print $'"$acc"' }')
+  password=$(echo $data | jq -r '.password')
+  id=$(echo $data | jq -r '.id')
+  token=$(echo $data | jq -r '.token')
+  echo -e "${yellow}Address:${end} $address \n${yellow}Password:${end} $password \n${yellow}ID:${end} $id \n${yellow}Token:${end} $token"
+  echo -n "Press [Enter] to clean..."; read
 }
 
 show_msg() {
@@ -181,12 +193,13 @@ delete_account() {
     fi  
   else
     accs=$(get_accounts "all")
-    $accs | jq -r '.email' | awk '{printf "[%d] %s\t", NR, $0; if (NR % 2 == 0) print ""} END {if (NR % 2 == 1) print ""}'
+    echo $accs | jq -r '.email' | awk '{printf "[%d] %s\t", NR, $0; if (NR % 2 == 0) print ""} END {if (NR % 2 == 1) print ""}'
     echo -n "Select an account >> "; read acc
-    address=$(echo $accs | jq -r '.email' | sed -n "${acc}p")
-    data=$(echo $accs | grep '"email":"'"$address"'"' | jq -r '\(.token) \(.id)')
-    token=$(echo $data | awk '{ print $1 }')
-    id=$(echo $data | awk '{ print $2 }')
+    address=$(echo $accs | awk '{ print $'"$acc"' }' | jq -r '.email')
+    data=$(echo $accs | awk '{ print $'"$acc"' }')
+    password=$(echo $data | jq -r '.password')
+    id=$(echo $data | jq -r '.id')
+    token=$(echo $data | jq -r '.token')
     header="Authorization: Bearer $token"
     curl -sX DELETE -H "$header" "https://api.mail.gw/accounts/$id"
 
