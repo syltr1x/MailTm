@@ -224,8 +224,14 @@ def show_msg():
     r = requests.get("https://api.mail.gw/messages", headers=header)
     mail_sayisi = r.text
     mail_sayisi = json.loads(mail_sayisi)
-    if str(mail_sayisi["hydra:member"]) != "[]":
-        id = mail_sayisi["hydra:member"][0]["id"]
+    if str(mail_sayisi["hydra:member"]) == "[]":
+        print(c.RED+"[!] You don't have any message"+c.WHITE)
+        return 0
+    mails = mail_sayisi["hydra:member"][::-1]
+    for msg in mails:
+        options = ["Atras", "Guardar Mensaje"]
+        print(c.YELLOW+"[*] "+c.WHITE+f'Displaying {mails.index(msg)+1} of {len(mails)}')
+        id = msg["id"]
         r  = requests.get(f"https://api.mail.gw/messages/{id}", headers=header)
         mail = r.text
         mail = json.loads(mail)
@@ -241,15 +247,20 @@ def show_msg():
         date = f"{date.split(" ")[0]} {hour}:{times[1]}:{times[2]}"
 
         print("\n----------------------------------------------")
-        print(c.GREEN+" Remitente : "+c.WHITE+mailS+c.GREEN+"\n Fecha : "+c.WHITE+date+c.GREEN+"\n Asunto : "+c.WHITE+title+c.GREEN+"\n Contenido : "+c.WHITE+content[:56]+"...")
-        print(c.YELLOW+"\n[0] Atras\n"+c.YELLOW+"[1] "+c.WHITE+"Mostrar todo el contenido   "+c.YELLOW+"[2] "+c.WHITE+"Guardar mensaje")
+        print(c.GREEN+" Remitente : "+c.WHITE+mailS+c.GREEN+"\n Fecha : "+c.WHITE+date+c.GREEN+"\n Asunto : "+c.WHITE+title+c.GREEN+"\n Contenido : "+c.WHITE+content[:56]+("..." if len(content) > 56 else ""))
+        if len(content) > 56: options.insert(1, "Mostrar todo el contendio")
+        if mails.index(msg) != len(mails)-1: options.append("Siguiente mensaje")
+        for opt in range(0, len(options), 2):
+            opcion_1 = f"{c.YELLOW}[{opt+1}]{c.WHITE} {options[opt]}"
+            if opt+1 < len(options): opcion_2 = f"{c.YELLOW}[{opt+2}]{c.WHITE} {options[opt+1]}"
+            else: opcion_2 = ""
+            print(f"{opcion_1:<30} {opcion_2}")
         option = input('Accion >> ')
         if option == "0": return 0
-        if option == "1": print(c.GREEN+f"Contenido : \n{c.WHITE+content}")
-        if option == "2": save_mail(mailS, acc["email"], title, date, content)
+        if option == "1": pass
+        if option == "2": print(c.GREEN+f"Contenido : \n{c.WHITE+content}")
+        if option == "3": save_mail(mailS, acc["email"], title, date, content)
         else: print(c.RED+f"[-] Err: No existe esa opcion"+c.WHITE)
-    else:
-        print(c.RED+"[!] NO TIENES NINGUN MENSAJE"+c.WHITE)
     input("\n[Enter] para limpiar...")
 
 try:
