@@ -171,7 +171,32 @@ show_accounts() {
 }
 
 show_msg() {
-    echo "Mirando mensajes"
+  accounts=$(get_accounts "len")
+  accs=$(get_accounts "all")
+  if [ $accounts -lt 2 ]; then
+    address=$(jq -r '.[].email' acc_info.json)
+  else
+    echo $accs | jq -r '.email' | awk '{printf "[%d] %s\t", NR, $0; if (NR % 2 == 0) print ""} END {if (NR % 2 == 1) print ""}'
+    echo -n "Select an account >> "; read acc
+    address=$(echo $accs | awk '{ print $'"$acc"' }' | jq -r '.email')
+  fi
+  token=$(echo $accs | awk '{ print $'"$acc"' }' | jq -r '.token')
+  header="Authorization: Bearer $token"
+  response=$(curl -sX GET -H "$header" "https://api.mail.gw/messages")
+  messages=$(echo "$response" | jq -r '."hydra:member"[].id')
+  for id in $messages; do
+    message=$(curl -sX GET -H "$header" "https://api.mail.gw/messages/$id")
+    sender=$(echo "$message" | jq -r '.from.address')
+    title=$(echo "$message" | jq -r '.subject')
+    datetime=$(echo "$message" | jq -r '.createdAt' | cut -d+ -f1- | sed 's/-/\//g' | sed 's/T/  /g')
+    content=$(echo "$message" | jq -r '.text')
+
+    echo -e "Sender: $sender"
+    echo -e "Title: $title"
+    echo -e "Date: $datetime" 
+    echo -e "Content: $content"
+    echo -e "-----------------------"
+  done
 }
 
 delete_account() {
