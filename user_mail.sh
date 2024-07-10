@@ -123,7 +123,7 @@ create_account() {
 }
 
 add_account() {
-    echo -e "${red}[0] ${end}Atras\n${yellow}[1] ${end}Iniciar sesión  ${yellow}[2] ${end}Crear cuenta"
+    echo -e "${red}[0] ${end}Back\n${yellow}[1] ${end}Log in  ${yellow}[2] ${end}Create account"
 	echo -n ">>"; read option
 	if [ $option -eq "0" ]; then
 		return 0
@@ -135,20 +135,20 @@ add_account() {
 		if [ $token -ne "empty" ] && [ $id -ne "empty" ]; then
 			$(write_account "$email" "$password" "$token" "$id")
 		else
-			echo -e "[*] La cuenta no existe, se creara una..."
+			echo -e "[*] Account doesn't exist. Creating one..."
 			$(create_account "$email" "$password")
-			echo -e "${green}[+] ${end}Cuenta creada con exito. Almacenando datos..."
+			echo -e "${green}[+] ${end}Account created succesfully. Storing data..."
 			$(write_account "$email" "$password")
-			echo -e "${green}[+] ${end}Cuenta almacenada con exito. Puedes continuar :)"
+			echo -e "${green}[+] ${end}Account stored succesfully :)"
 		fi
 	elif [ $option -eq "2" ]; then
 		echo -n "Address (not include domain) >> "; read email
 		echo -n "Password >> "; read password
 		domain=$(get_address "random")
 		$(create_account "$email$domain" "$password")
-		$(write_account "$email" "$password")
+		$(write_account "$email$domain" "$password")
 	else
-		echo -e "${red}[-] Err: ${end}Entrada no valida. Porfavor reintentalo."
+		echo -e "${red}[-] Err: ${end}Invalid input. Please try again."
 	fi
 }
 
@@ -197,7 +197,7 @@ show_msg() {
     echo -e "Date: $datetime" 
     echo -e "Content: $content"
     echo -e "-----------------------"
-    echo -e "${red}[0] ${end}Close\n${yellow}[1] ${end}Save msg      ${yellow}[2] ${end}Next msg"
+    echo -e "${red}[0] ${end}Back\n${yellow}[1] ${end}Save msg      ${yellow}[2] ${end}Next msg"
     echo -n ">> "; read action
     if [ $action == "0" ]; then
       break
