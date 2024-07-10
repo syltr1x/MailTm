@@ -175,6 +175,7 @@ show_msg() {
   accs=$(get_accounts "all")
   if [ $accounts -lt 2 ]; then
     address=$(jq -r '.[].email' acc_info.json)
+    acc=1
   else
     echo $accs | jq -r '.email' | awk '{printf "[%d] %s\t", NR, $0; if (NR % 2 == 0) print ""} END {if (NR % 2 == 1) print ""}'
     echo -n "Select an account >> "; read acc
@@ -183,7 +184,7 @@ show_msg() {
   token=$(echo $accs | awk '{ print $'"$acc"' }' | jq -r '.token')
   header="Authorization: Bearer $token"
   response=$(curl -sX GET -H "$header" "https://api.mail.gw/messages")
-  messages=$(echo "$response" | jq -r '."hydra:member"[].id')
+  messages=$(echo "$response" | jq -r '."hydra:member"[].id' | tac)
   for id in $messages; do
     message=$(curl -sX GET -H "$header" "https://api.mail.gw/messages/$id")
     sender=$(echo "$message" | jq -r '.from.address')
@@ -196,6 +197,15 @@ show_msg() {
     echo -e "Date: $datetime" 
     echo -e "Content: $content"
     echo -e "-----------------------"
+    echo -e "${red}[0] ${end}Close\n${yellow}[1] ${end}Save msg      ${yellow}[2] ${end}Next msg"
+    echo -n ">> "; read action
+    if [ $action == "0" ]; then
+      break
+    elif [ $action == "1" ]; then
+      trim_title=$(echo "$title" | cut -c 1-12)
+      formated_date=$(echo "$message" | jq -r '.createdAt' | cut -d+ -f1- | sed 's/T/  /g')
+      echo -e "Sender: $sender \nSubject: $title \nDate: $datetime \nContent: $content" > "$trim_title_$formated_date.txt"
+    fi
   done
 }
 
